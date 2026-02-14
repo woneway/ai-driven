@@ -6,12 +6,13 @@
 #   ./init-space.sh <space_name> [code_root1] [code_root2] ...
 #
 # 示例:
-#   ./init-space.sh poker_space ../york/ios-poker-game
-#   ./init-space.sh myapp ../frontend ../backend
+#   ./init-space.sh poker_space ../ai-projects/ios-poker-game
+#   ./init-space.sh myapp ../ai-projects/frontend ../ai-projects/backend
 #
 # 注意:
-#   - 代码仓库路径是相对于 workspace 目录的相对路径
-#   - 会在当前目录创建 workspaces/<space_name> 目录
+#   - 代码仓库路径是相对于 ai-driven 根目录的路径
+#   - 项目代码应该存放在 ai/ai-projects/ 目录下
+#   - 会在 workspaces/ 创建 workspace 元数据
 # =============================================================================
 
 set -e
@@ -25,18 +26,20 @@ if [ -z "$SPACE_NAME" ] || [ -z "$CODE_ROOTS" ]; then
     echo ""
     echo "示例:"
     echo "  # 单代码仓库"
-    echo "  $0 poker_space ../york/ios-poker-game"
+    echo "  $0 poker_space ../ai-projects/ios-poker-game"
     echo ""
     echo "  # 多代码仓库"
-    echo "  $0 myapp ../frontend ../backend"
+    echo "  $0 myapp ../ai-projects/frontend ../ai-projects/backend"
     echo ""
-    echo "注意: 代码仓库路径是相对于 workspace 目录的相对路径"
+    echo "注意: 代码仓库路径是相对于 ai-driven 根目录的路径"
+    echo "      项目代码应存放在 ai/ai-projects/ 目录下"
     exit 1
 fi
 
 # 获取 ai-driven 根目录
 AI_DRIVEN_ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
-SPACE_ROOT="$AI_DRIVEN_ROOT/workspaces/$SPACE_NAME"
+WORKSPACES_ROOT="$AI_DRIVEN_ROOT/workspaces"
+SPACE_ROOT="$WORKSPACES_ROOT/$SPACE_NAME"
 
 if [ -d "$SPACE_ROOT" ]; then
     echo "错误: $SPACE_ROOT 已存在"
@@ -48,7 +51,7 @@ echo "  代码仓库: $CODE_ROOTS"
 echo ""
 
 # 1. 创建目录结构
-mkdir -p "$SPACE_ROOT"/{.specs,.changes,.roles,.cursor/{skills,rules}}
+mkdir -p "$SPACE_ROOT"/{.specs,.changes,.roles,.cursor/{rules,agents,skills}}
 
 # 2. 创建 .space-config
 cat > "$SPACE_ROOT/.space-config" << EOF
@@ -97,93 +100,57 @@ for mem_file in decisions lessons prefs feedback; do
 EOF
 done
 
-# 6. 创建 Cursor 规则文件（深度集成）
-cat > "$SPACE_ROOT/.cursor/rules/001-main.mdc" << 'EOF'
----
-description: AI-Driven 主 Agent 定义
-globs: "*"
----
-# AI-Driven 主 Agent
+# 6. 同步 Cursor Rules (common/rules/*.mdc -> .cursor/rules/)
+echo "同步 Rules..."
+if [ -d "$AI_DRIVEN_ROOT/common/rules" ]; then
+    cp -n "$AI_DRIVEN_ROOT/common/rules/"*.mdc "$SPACE_ROOT/.cursor/rules/" 2>/dev/null || true
+fi
 
-## 核心价值观
-1. 简单优先
-2. 自动化
-3. 质量保障
-4. 持续学习
+# 7. 同步 Commands 参考文档 (common/commands/*.md -> .cursor/commands/)
+echo "同步 Commands..."
+mkdir -p "$SPACE_ROOT/.cursor/commands"
+if [ -d "$AI_DRIVEN_ROOT/common/commands" ]; then
+    cp -n "$AI_DRIVEN_ROOT/common/commands/"*.md "$SPACE_ROOT/.cursor/commands/" 2>/dev/null || true
+fi
 
-## 子 Agent
-| Agent | 职责 |
-|-------|------|
-| planner | 需求分析、计划制定 |
-| executor | 代码实现、TDD |
-| reviewer | 代码审查 |
-| researcher | 调研分析 |
-| qa | 测试验证 |
-EOF
+# 7. 同步 Cursor Agents (common/agents/*.md -> .cursor/agents/)
+echo "同步 Agents..."
+mkdir -p "$SPACE_ROOT/.cursor/agents"
+if [ -d "$AI_DRIVEN_ROOT/common/agents" ]; then
+    cp -n "$AI_DRIVEN_ROOT/common/agents/"*.md "$SPACE_ROOT/.cursor/agents/" 2>/dev/null || true
+fi
 
-cat > "$SPACE_ROOT/.cursor/rules/002-dev.mdc" << 'EOF'
----
-description: /dev 命令定义
-globs: "*"
----
-# /dev 命令
-
-## 用法
-/dev <需求描述>
-
-## 支持类型
-- 新功能、Bug、优化、调研、技术债
-
-## 流程
-1. 分析需求
-2. 创建 .changes/{date}_{slug}/
-3. 调度子 Agent
-4. 执行验证
-5. 更新记忆
-EOF
-
-cat > "$SPACE_ROOT/.cursor/rules/003-skills.mdc" << 'EOF'
----
-description: 可用技能库
-globs: "*"
----
-# 可用技能
-
-## 核心
-- brainstorming
-- tdd
-- debugging
-
-## 语言特定（需安装）
-- Swift: swiftui-expert-skill
-- Python: python-testing-patterns
-- Java: java-spring-development
-EOF
-
-# 7. 创建 skills symlinks
+# 8. 创建 skills symlinks
+echo "同步 Skills..."
 cd "$SPACE_ROOT/.cursor/skills"
-for skill_dir in "$AI_DRIVEN_ROOT/TOOLS/skills/"*/; do
-    [ -d "$skill_dir" ] || continue
-    skill_name=$(basename "$skill_dir")
-    ln -s "../../TOOLS/skills/$skill_name" "$skill_name"
-done
+if [ -d "$AI_DRIVEN_ROOT/common/skills" ]; then
+    for skill_dir in "$AI_DRIVEN_ROOT/common/skills/"*/; do
+        [ -d "$skill_dir" ] || continue
+        skill_name=$(basename "$skill_dir")
+        if [ ! -e "$skill_name" ]; then
+            ln -s "../../common/skills/$skill_name" "$skill_name"
+        fi
+    done
+fi
 
-# 8. 初始化 git
+# 9. 初始化 git
 cd "$SPACE_ROOT"
 git init -q
 git add -A
 git commit -q -m "初始化 $SPACE_NAME workspace"
 
+echo ""
 echo "✅ 创建完成: $SPACE_NAME"
 echo ""
 echo "📁 目录结构:"
 echo "   $SPACE_ROOT/"
-echo "   ├── .specs/"
-echo "   ├── .changes/"
-echo "   ├── .roles/"
+echo "   ├── .specs/              # 需求规格"
+echo "   ├── .changes/            # 变更记录"
+echo "   ├── .roles/              # 角色记忆"
 echo "   ├── .cursor/"
-echo "   │   ├── rules/     # Cursor 自动加载"
-echo "   │   └── skills/   # 技能链接"
+echo "   │   ├── rules/           # Cursor Rules (自动加载)"
+echo "   │   ├── agents/          # Cursor Subagents (自动加载)"
+echo "   │   └── skills/          # 技能链接"
 echo "   ├── .space-config"
 echo "   └── .code-workspace"
 echo ""

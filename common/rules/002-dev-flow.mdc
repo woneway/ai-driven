@@ -1,0 +1,62 @@
+---
+description: /dev 命令的变更结构和执行流程。
+globs: "*"
+---
+# /dev 命令执行流程
+
+## 变更结构
+
+每个需求变更都在 `.changes/` 目录下创建：
+
+```
+.changes/{date}_{slug}/
+├── proposal.md    # 为什么做（需求分析）
+├── design.md      # 技术设计
+├── tasks.md       # 实施任务
+└── (其他变更文件)
+```
+
+## 执行流程
+
+### 1. 理解需求
+
+通过提问确认：
+- 目标是什么？
+- 成功标准是什么？
+- 有什么约束？
+
+### 2. 分类判断
+
+判断：
+- 类型：新功能 / Bug / 优化 / 调研 / 技术债
+- 复杂度：小（<2h）/ 中（2h-1d）/ 大（>1d）
+
+### 3. 创建变更目录
+
+```bash
+mkdir -p .changes/$(date +%Y%m%d)_${slug}
+```
+
+### 4. 调度子 Agent
+
+根据分类决定调度哪些 Agent：
+- **planner**: 需求分析、设计
+- **executor**: 代码实现、TDD
+- **reviewer**: 代码审查
+- **researcher**: 技术调研
+- **qa**: 测试验证
+
+### 5. 执行并验证
+
+- 代码实现
+- 单元测试
+- 集成测试
+- 代码审查
+
+### 6. 更新记忆
+
+变更完成后自动更新：
+- `.roles/lessons.md` - 经验教训
+- `.roles/decisions.md` - 架构决策
+- `.roles/prefs.md` - 代码偏好
+- `.roles/feedback.md` - 反馈给 ai-driven

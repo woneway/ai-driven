@@ -1,23 +1,32 @@
 ---
-description: 项目命令和上下文
+description: 项目上下文和偏好设置。
 globs:
+  - "*.{swift,py,js,ts,java,go,rs}"
+  - ".space-config"
+  - "**/*.md"
+not-globs:
+  - "**/.git/**"
+  - "**/node_modules/**"
+  - "**/build/**"
+  - "**/.build/**"
 ---
-# 项目命令
+# 项目上下文
 
-## `/dev <需求>`
+## 项目信息
 
-唯一开发命令。人类只需表达需求，AI 自动完成。
+从 `.space-config` 文件读取：
+- `SPACE_NAME`: 项目名称
+- `CODE_ROOTS`: 代码根目录列表
 
-详细说明见 `../AGENTS/README.md`
+## 常用目录
 
-## `/dev:status`
+```
+.spacs/                  # 需求规格
+.changes/                # 变更记录
+.roles/                  # 角色记忆
+.cursor/                 # Cursor 配置
+```
 
-查看当前变更进度。
+## 代码偏好
 
-## `/ai-driven:sync`
-
-同步配置到 workspace。
-
-## `/ai-driven:analyze`
-
-分析所有 workspace 的 feedback。
+从 `.roles/prefs.md` 读取项目特定的代码偏好设置。

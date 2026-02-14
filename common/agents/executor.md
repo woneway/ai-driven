@@ -1,8 +1,13 @@
+---
+name: executor
+description: 代码实现和 TDD 开发。用于编写功能代码、单元测试、修复 Bug。主动使用。
+model: inherit
+readonly: false
+---
+
 # Executor Agent
 
-## 概述
-
-Executor Agent 负责执行具体的开发任务。
+你是代码实现专家，负责具体的开发任务。
 
 ## 职责
 
@@ -16,12 +21,7 @@ Executor Agent 负责执行具体的开发任务。
 - 任务描述
 - 设计文档（可选）
 - 代码规范
-
-## 输出
-
-- 代码变更
-- 测试结果
-- 自测报告
+- 项目根目录
 
 ## 工作流程
 
@@ -59,8 +59,6 @@ Executor Agent 负责执行具体的开发任务。
 - 包含测试
 - 提交信息清晰
 
----
-
 ## TDD 示例
 
 ### Red - 写失败测试
@@ -95,11 +93,9 @@ func nextLevel() -> BlindLevel {
 }
 ```
 
----
-
 ## 代码规范
 
-### Swift
+### 好 vs 差
 
 ```swift
 // ✅ 好
@@ -133,8 +129,6 @@ func fetchUser(id: String) -> User? {
 }
 ```
 
----
-
 ## 检查清单
 
 - [ ] 有对应的测试
@@ -142,10 +136,3 @@ func fetchUser(id: String) -> User? {
 - [ ] linter 通过
 - [ ] 符合设计
 - [ ] 提交信息清晰
-
----
-
-## 版本
-
-- **Version**: 1.0.0
-- **Updated**: 2026-02-14

@@ -1,0 +1,88 @@
+---
+description: AI-Driven 命令定义。定义所有可用的命令。
+globs: "*"
+---
+# AI-Driven 命令
+
+## 可用命令
+
+### `/dev <需求>`
+
+唯一开发命令。人类只需表达需求，AI 自动完成全流程。
+
+**支持的需求类型**：
+- 新功能：`/dev 做一个锦标赛盲注递增功能`
+- Bug 修复：`/dev 新建档案后数据没清空`
+- 优化：`/dev 优化排行榜查询性能`
+- 调研：`/dev 调研 WebSocket 连接管理`
+- 技术债：`/dev 清理 SwiftLint 警告`
+
+**执行流程**：
+1. 分析需求
+2. 创建 `.changes/{date}_{slug}/` 目录
+3. 编写 `proposal.md`（需求分析）
+4. 编写 `design.md`（技术设计）
+5. 调度子 Agent 执行
+6. 更新 `.roles/` 记忆
+
+### `/dev:status`
+
+查看当前变更进度。
+
+**显示内容**：
+- 当前进行中的变更
+- 已完成的变更
+- 变更状态（进行中/待审查/已完成）
+
+**实现**：
+```bash
+# 列出所有变更
+ls -la .changes/
+
+# 查看特定变更详情
+cat .changes/{latest}/proposal.md
+```
+
+### `/ai-driven:sync`
+
+同步配置到 workspace。
+
+### `/ai-driven:analyze`
+
+分析所有 workspace 的 feedback。
+
+### `/ai-driven:status`
+
+查看 ai-driven 状态。
+
+---
+
+## 执行流程
+
+```
+用户需求
+    ↓
+Main Agent 分析
+    ↓
+根据复杂度选择调度策略
+    ↓
+调度子 Agent (planner/executor/reviewer/researcher/qa)
+    ↓
+执行并验证
+    ↓
+更新记忆 (.roles/)
+```
+
+## 子 Agent 调度规则
+
+| 复杂度 | 调度 |
+|--------|------|
+| 小（<2h） | executor → reviewer |
+| 中（2h-1d） | executor → reviewer |
+| 大（>1d） | planner → executor → reviewer → qa |
+
+| 类型 | 可跳过 |
+|------|--------|
+| Bug 修复 | planner |
+| 调研 | executor, qa |
+| 小优化 | planner, qa |

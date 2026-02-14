@@ -5,7 +5,7 @@
 # 使用相对于 ai-driven 根目录的路径
 
 workspaces:
-  # - name: example_space
-  #   path: workspaces/example_space
-  #   code_roots:
-  #     - ../york/example-repo    # 相对于 workspace 目录
+  - name: test_workspace
+    path: workspaces/test_workspace
+    code_roots:
+      - ../ai-projects/test_project

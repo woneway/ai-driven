@@ -1,6 +1,8 @@
-# `/dev` 命令 - AI 驱动开发入口
-
-## 概述
+---
+description: /dev 命令 - AI 驱动开发入口。定义唯一开发命令和执行流程。
+globs: "*"
+---
+# /dev 命令
 
 `/dev` 是唯一的开发命令。人类只需表达需求，AI 自动完成全流程。
 
@@ -10,7 +12,7 @@
 /dev <需求描述>
 ```
 
-### 支持的需求类型
+## 支持的需求类型
 
 | 类型 | 示例 |
 |------|------|
@@ -48,8 +50,6 @@ Main Agent 分析
 | researcher | 调研 | 技术调研 |
 | qa | 测试 | 测试验证 |
 
-详见 `.cursor/agents/`
-
 ### Task tool 调用
 
 ```python
@@ -59,13 +59,13 @@ Task(
     prompt="""
         # Agent 定义
         [读取 .cursor/agents/[agent].md]
-        
+
         # 项目上下文
         [读取 .space-config]
-        
+
         # 代码仓库
         - 代码根目录: [从 CODE_ROOTS 获取]
-        
+
         # 任务
         [具体任务描述]
     """

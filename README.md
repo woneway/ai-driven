@@ -29,9 +29,12 @@ AI：自动完成（分析 → 计划 → 执行 → 验证 → 学习）
 └─────────────────────────────────────────────────────────────┘
                               ↓
 ┌─────────────────────────────────────────────────────────────┐
-│                         TOOLS                               │
-│  - skills/       技能库                                     │
-│  - commands/     命令定义                                   │
+│                         COMMON                              │
+│  - agents/        子 Agent 定义                             │
+│  - rules/         Cursor 规则                              │
+│  - commands/      命令文档                                  │
+│  - skills/        技能库                                    │
+│  - bin/           工具脚本                                  │
 └─────────────────────────────────────────────────────────────┘
                               ↓
 ┌─────────────────────────────────────────────────────────────┐
@@ -52,28 +55,27 @@ ai-driven/
 │   ├── IDENTITY.md
 │   └── DECISION.md
 │
-├── AGENTS/                     # 子 Agent 定义
-│   ├── README.md              # Agent 对应关系
+├── AGENTS/                     # 子 Agent 定义（旧版）
+│   ├── README.md
 │   ├── planner/
 │   ├── executor/
 │   ├── reviewer/
 │   ├── researcher/
 │   └── qa/
 │
-├── TOOLS/                      # 工具
-│   ├── skills/                # 技能库
-│   └── commands/              # 命令定义
+├── common/                     # 通用配置
+│   ├── agents/                 # Cursor Subagents
+│   ├── rules/                  # Cursor Rules
+│   ├── commands/                # 命令文档
+│   ├── skills/                 # 技能库
+│   └── bin/                    # 工具脚本
 │
 ├── MEMORY/                     # 记忆模板
 │
 ├── WORKSPACE/                  # 工作空间
 │
-├── config/
-│   └── workspaces.yaml
-│
-└── common/
-    ├── bin/init-space.sh
-    └── rules/
+└── config/
+    └── workspaces.yaml
 ```
 
 ## 快速开始
