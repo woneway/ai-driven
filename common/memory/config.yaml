@@ -1,0 +1,36 @@
+# ai-driven 记忆系统配置文件
+# 使用 YAML 格式
+
+version: "1.0"
+
+# 记忆服务配置
+memory:
+  # 提供者: mem0 (开源版)
+  provider: "mem0"
+
+  # 存储配置
+  storage:
+    # 类型: sqlite, postgres, chroma, qdrant
+    type: "sqlite"
+    path: "../data/memory.db"
+
+  # 嵌入模型配置
+  # embedding_model: "openai"
+  # embedding_dims: 1536
+
+  # 搜索配置
+  search:
+    top_k: 5
+    threshold: 0.7
+
+  # 保留策略
+  retention:
+    max_memories: 1000
+    auto_cleanup: true
+
+  # 默认配置
+  defaults:
+    # 基础配置
+    user_id: "ai-driven"
+    recall: true
+    remember: true
