@@ -50,10 +50,7 @@ echo ""
 # 1. 创建目录结构
 mkdir -p "$SPACE_ROOT"/{.specs,.changes,.roles,.cursor/{skills,rules}}
 
-# 2. 创建 .space-config（核心配置文件）
-# 将 CODE_ROOTS 转换为逗号分隔的字符串
-CODE_ROOTS_COMMA=$(echo "$CODE_ROSTS" | tr ' ' ',')
-
+# 2. 创建 .space-config
 cat > "$SPACE_ROOT/.space-config" << EOF
 # Workspace Configuration
 # 此文件是 ai-driven 的核心配置
@@ -63,13 +60,9 @@ SPACE_NAME=$SPACE_NAME
 
 # 代码仓库列表（相对于 workspace 目录的路径）
 CODE_ROOTS=$CODE_ROOTS
-
-# 使用的语言/技术栈（用于选择合适的技能，可选）
-# LANGUAGES=swift,python,go
 EOF
 
 # 3. 创建 .code-workspace（Cursor 配置）
-# 将每个 code_root 转换为相对路径
 FOLDERS_JSON="[{\"path\": \".\""
 for code_root in $CODE_ROOTS; do
     CODE_ROOT_REL=$(perl -e 'use File::Spec; print File::Spec->abs2rel($ARGV[0], $ARGV[1])' "$code_root" "$SPACE_ROOT")
@@ -93,39 +86,17 @@ cat > "$SPACE_ROOT/.gitignore" << 'EOF'
 EOF
 
 # 5. 创建角色记忆文件
-cat > "$SPACE_ROOT/.roles/decisions.md" << 'EOF'
-# 架构与产品决策记录
+for mem_file in decisions lessons prefs feedback; do
+    cat > "$SPACE_ROOT/.roles/${mem_file}.md" << EOF
+# ${mem_file^}
 
-> 记录项目中的重要架构和产品决策。
-
----
-EOF
-
-cat > "$SPACE_ROOT/.roles/lessons.md" << 'EOF'
-# 经验教训
-
-> 记录开发过程中的踩坑经验和最佳实践。
+> $mem_file 记录。
 
 ---
 EOF
+done
 
-cat > "$SPACE_ROOT/.roles/prefs.md" << 'EOF'
-# 代码偏好
-
-> 记录项目的代码风格约定和偏好。
-
----
-EOF
-
-cat > "$SPACE_ROOT/.roles/feedback.md" << 'EOF'
-# 反馈给 AI-Driven
-
-> AI 自动识别并记录需要升级的能力。
-
----
-EOF
-
-# 6. 创建 .cursor/rules（从模板复制）
+# 6. 创建 .cursor/rules
 for tmpl in "$AI_DRIVEN_ROOT/common/rules/"*.template.mdc; do
     [ -f "$tmpl" ] || continue
     out_name="$(basename "${tmpl%.template.mdc}.mdc")"
@@ -133,7 +104,6 @@ for tmpl in "$AI_DRIVEN_ROOT/common/rules/"*.template.mdc; do
         "$tmpl" > "$SPACE_ROOT/.cursor/rules/$out_name"
 done
 
-# 复制非模板 rules
 for static_mdc in "$AI_DRIVEN_ROOT/common/rules/"*.mdc; do
     [ -f "$static_mdc" ] || continue
     [[ "$static_mdc" == *.template.mdc ]] && continue
@@ -142,10 +112,10 @@ done
 
 # 7. 创建 skills symlinks（使用相对路径）
 cd "$SPACE_ROOT/.cursor/skills"
-for skill_dir in "$AI_DRIVEN_ROOT/common/skills/"*/; do
+for skill_dir in "$AI_DRIVEN_ROOT/TOOLS/skills/"*/; do
     [ -d "$skill_dir" ] || continue
     skill_name=$(basename "$skill_dir")
-    ln -s "../../common/skills/$skill_name" "$skill_name"
+    ln -s "../../TOOLS/skills/$skill_name" "$skill_name"
 done
 
 # 8. 初始化 git
@@ -162,7 +132,7 @@ echo "   ├── .specs/         # 权威规范"
 echo "   ├── .changes/       # 变更管理"
 echo "   ├── .roles/         # 共享记忆"
 echo "   ├── .cursor/        # Cursor 配置"
-echo "   ├── .space-config   # workspace 配置（核心）"
+echo "   ├── .space-config   # workspace 配置"
 echo "   └── .code-workspace # Cursor 多文件夹"
 echo ""
 echo "📝 下一步:"
