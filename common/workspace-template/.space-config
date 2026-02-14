@@ -1,3 +1,8 @@
 # Workspace Configuration
+
 SPACE_NAME={{PROJECT_NAME}}
 CODE_ROOTS=
+
+# Agent Teams
+# 启用方式：在 Cursor 设置中添加 "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS": true
+# 详细说明：见 AGENT-TEAMS.md

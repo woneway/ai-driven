@@ -1,0 +1,11 @@
+{
+  // Agent Teams 实验性功能
+  "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS": true,
+  
+  // 其他推荐设置
+  "editor.formatOnSave": true,
+  "editor.tabSize": 2,
+  "files.associations": {
+    "*.md": "markdown"
+  }
+}
