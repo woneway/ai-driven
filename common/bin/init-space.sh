@@ -53,12 +53,7 @@ mkdir -p "$SPACE_ROOT"/{.specs,.changes,.roles,.cursor/{skills,rules}}
 # 2. 创建 .space-config
 cat > "$SPACE_ROOT/.space-config" << EOF
 # Workspace Configuration
-# 此文件是 ai-driven 的核心配置
-
-# workspace 名称
 SPACE_NAME=$SPACE_NAME
-
-# 代码仓库列表（相对于 workspace 目录的路径）
 CODE_ROOTS=$CODE_ROOTS
 EOF
 
@@ -87,8 +82,14 @@ EOF
 
 # 5. 创建角色记忆文件
 for mem_file in decisions lessons prefs feedback; do
+    case $mem_file in
+        decisions) title="决策" ;;
+        lessons) title="经验教训" ;;
+        prefs) title="偏好" ;;
+        feedback) title="反馈" ;;
+    esac
     cat > "$SPACE_ROOT/.roles/${mem_file}.md" << EOF
-# ${mem_file^}
+# $title
 
 > $mem_file 记录。
 
@@ -96,21 +97,70 @@ for mem_file in decisions lessons prefs feedback; do
 EOF
 done
 
-# 6. 创建 .cursor/rules
-for tmpl in "$AI_DRIVEN_ROOT/common/rules/"*.template.mdc; do
-    [ -f "$tmpl" ] || continue
-    out_name="$(basename "${tmpl%.template.mdc}.mdc")"
-    sed "s|{{SPEC_ROOT}}|.|g; s|{{PROJECT_NAME}}|$SPACE_NAME|g" \
-        "$tmpl" > "$SPACE_ROOT/.cursor/rules/$out_name"
-done
+# 6. 创建 Cursor 规则文件（深度集成）
+cat > "$SPACE_ROOT/.cursor/rules/001-main.mdc" << 'EOF'
+---
+description: AI-Driven 主 Agent 定义
+globs: "*"
+---
+# AI-Driven 主 Agent
 
-for static_mdc in "$AI_DRIVEN_ROOT/common/rules/"*.mdc; do
-    [ -f "$static_mdc" ] || continue
-    [[ "$static_mdc" == *.template.mdc ]] && continue
-    cp "$static_mdc" "$SPACE_ROOT/.cursor/rules/"
-done
+## 核心价值观
+1. 简单优先
+2. 自动化
+3. 质量保障
+4. 持续学习
 
-# 7. 创建 skills symlinks（使用相对路径）
+## 子 Agent
+| Agent | 职责 |
+|-------|------|
+| planner | 需求分析、计划制定 |
+| executor | 代码实现、TDD |
+| reviewer | 代码审查 |
+| researcher | 调研分析 |
+| qa | 测试验证 |
+EOF
+
+cat > "$SPACE_ROOT/.cursor/rules/002-dev.mdc" << 'EOF'
+---
+description: /dev 命令定义
+globs: "*"
+---
+# /dev 命令
+
+## 用法
+/dev <需求描述>
+
+## 支持类型
+- 新功能、Bug、优化、调研、技术债
+
+## 流程
+1. 分析需求
+2. 创建 .changes/{date}_{slug}/
+3. 调度子 Agent
+4. 执行验证
+5. 更新记忆
+EOF
+
+cat > "$SPACE_ROOT/.cursor/rules/003-skills.mdc" << 'EOF'
+---
+description: 可用技能库
+globs: "*"
+---
+# 可用技能
+
+## 核心
+- brainstorming
+- tdd
+- debugging
+
+## 语言特定（需安装）
+- Swift: swiftui-expert-skill
+- Python: python-testing-patterns
+- Java: java-spring-development
+EOF
+
+# 7. 创建 skills symlinks
 cd "$SPACE_ROOT/.cursor/skills"
 for skill_dir in "$AI_DRIVEN_ROOT/TOOLS/skills/"*/; do
     [ -d "$skill_dir" ] || continue
@@ -128,15 +178,15 @@ echo "✅ 创建完成: $SPACE_NAME"
 echo ""
 echo "📁 目录结构:"
 echo "   $SPACE_ROOT/"
-echo "   ├── .specs/         # 权威规范"
-echo "   ├── .changes/       # 变更管理"
-echo "   ├── .roles/         # 共享记忆"
-echo "   ├── .cursor/        # Cursor 配置"
-echo "   ├── .space-config   # workspace 配置"
-echo "   └── .code-workspace # Cursor 多文件夹"
+echo "   ├── .specs/"
+echo "   ├── .changes/"
+echo "   ├── .roles/"
+echo "   ├── .cursor/"
+echo "   │   ├── rules/     # Cursor 自动加载"
+echo "   │   └── skills/   # 技能链接"
+echo "   ├── .space-config"
+echo "   └── .code-workspace"
 echo ""
 echo "📝 下一步:"
 echo "   1. 用 Cursor 打开: $SPACE_ROOT/.code-workspace"
 echo "   2. 使用 /dev 命令开始开发"
-echo ""
-echo "💡 提示: 代码仓库路径是相对路径，便于项目迁移"
