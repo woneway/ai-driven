@@ -1,8 +1,10 @@
 #!/bin/bash
 # =============================================================================
 # init-space.sh - 创建新的 workspace
-# 用法: ./init-space.sh <space_name> <code_root1> [code_root2] ...
-# 示例: ./init-space.sh poker_space /Users/lianwu/york/ios-poker-game
+# 用法: ./init-space.sh <space_name> [code_root1] [code_root2] ...
+# 示例: ./init-space.sh poker_space ../york/ios-poker-game
+#
+# 注意：代码仓库路径相对于 workspace 目录
 # =============================================================================
 
 set -e
@@ -12,8 +14,10 @@ shift
 CODE_ROOTS="$@"
 
 if [ -z "$SPACE_NAME" ] || [ -z "$CODE_ROOTS" ]; then
-    echo "用法: $0 <space_name> <code_root1> [code_root2] ..."
-    echo "示例: $0 poker_space /Users/lianwu/york/ios-poker-game"
+    echo "用法: $0 <space_name> [code_root1] [code_root2] ..."
+    echo "示例: $0 poker_space ../york/ios-poker-game"
+    echo ""
+    echo "代码仓库路径：相对于 workspace 目录的相对路径"
     exit 1
 fi
 
@@ -32,23 +36,24 @@ echo ""
 # 1. 创建目录结构
 mkdir -p "$SPACE_ROOT"/{.specs,.changes,.roles,.cursor/{skills,rules}}
 
-# 2. 创建 .space-config
+# 2. 创建 .space-config（使用相对路径）
 cat > "$SPACE_ROOT/.space-config" << EOF
 SPACE_NAME=$SPACE_NAME
 CODE_ROOTS=$CODE_ROOTS
 EOF
 
-# 3. 创建 .code-workspace（Cursor 多文件夹配置）
-# 生成相对路径
-FIRST_CODE_ROOT="$1"
-CODE_ROOT_REL=$(perl -e 'use File::Spec; print File::Spec->abs2rel($ARGV[0], $ARGV[1])' "$FIRST_CODE_ROOT" "$SPACE_ROOT")
+# 3. 创建 .code-workspace（使用相对路径）
+# 将每个 code_root 转换为相对路径
+FOLDERS_JSON="[\"path\": \".\""
+for code_root in $CODE_ROOTS; do
+    CODE_ROOT_REL=$(perl -e 'use File::Spec; print File::Spec->abs2rel($ARGV[0], $ARGV[1])' "$code_root" "$SPACE_ROOT")
+    FOLDERS_JSON="$FOLDERS_JSON, {\"path\": \"$CODE_ROOT_REL\"}"
+done
+FOLDERS_JSON="$FOLDERS_JSON]"
 
 cat > "$SPACE_ROOT/.code-workspace" << EOF
 {
-    "folders": [
-        { "path": "." },
-        { "path": "$CODE_ROOT_REL" }
-    ],
+    "folders": $FOLDERS_JSON,
     "settings": {}
 }
 EOF
@@ -90,7 +95,7 @@ EOF
 for tmpl in "$AI_DRIVEN_ROOT/common/rules/"*.template.mdc; do
     [ -f "$tmpl" ] || continue
     out_name="$(basename "${tmpl%.template.mdc}.mdc")"
-    sed "s|{{SPEC_ROOT}}|$SPACE_ROOT|g; s|{{PROJECT_NAME}}|$SPACE_NAME|g" \
+    sed "s|{{SPEC_ROOT}}|.|g; s|{{PROJECT_NAME}}|$SPACE_NAME|g" \
         "$tmpl" > "$SPACE_ROOT/.cursor/rules/$out_name"
 done
 
@@ -101,11 +106,13 @@ for static_mdc in "$AI_DRIVEN_ROOT/common/rules/"*.mdc; do
     cp "$static_mdc" "$SPACE_ROOT/.cursor/rules/"
 done
 
-# 6. 创建 skills symlinks
+# 6. 创建 skills symlinks（使用相对路径）
+cd "$SPACE_ROOT/.cursor/skills"
 for skill_dir in "$AI_DRIVEN_ROOT/common/skills/"*/; do
     [ -d "$skill_dir" ] || continue
     skill_name=$(basename "$skill_dir")
-    ln -s "$AI_DRIVEN_ROOT/common/skills/$skill_name" "$SPACE_ROOT/.cursor/skills/$skill_name"
+    # 使用相对路径创建 symlink
+    ln -s "../../common/skills/$skill_name" "$skill_name"
 done
 
 # 7. 初始化 git
@@ -119,3 +126,5 @@ echo ""
 echo "下一步："
 echo "  1. 用 Cursor 打开: $SPACE_ROOT/.code-workspace"
 echo "  2. 使用 /dev 命令开始开发"
+echo ""
+echo "提示：代码仓库路径是相对路径，便于项目迁移"

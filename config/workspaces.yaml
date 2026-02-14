@@ -1,9 +1,11 @@
 # Workspace Configuration
-# This file lists all workspaces managed by ai-driven
+# 使用相对路径，便于项目迁移
+
+# Workspace List
+# 使用相对于 ai-driven 根目录的路径
 
 workspaces:
   # - name: example_space
-  #   path: /Users/lianwu/ai/ai-driven/workspaces/example_space
+  #   path: workspaces/example_space
   #   code_roots:
-  #     - /path/to/code/repo1
-  #     - /path/to/code/repo2
+  #     - ../york/example-repo    # 相对于 workspace 目录

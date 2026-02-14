@@ -4,9 +4,9 @@ globs:
 ---
 # {{PROJECT_NAME}}
 
-- **规范**: `{{SPEC_ROOT}}/.specs/`
-- **变更**: `{{SPEC_ROOT}}/.changes/`
-- **记忆**: `{{SPEC_ROOT}}/.roles/`
+- **规范**: `.specs/`
+- **变更**: `.changes/`
+- **记忆**: `.roles/`
 - **代码仓库**: 见 `.code-workspace`
 - 使用 **简体中文**
 
@@ -66,7 +66,7 @@ globs:
 │   ├── skills/     # 技能链接
 │   └── rules/       # 规则
 │
-├── .code-workspace # 代码仓库配置
+├── .code-workspace # 代码仓库配置（相对路径）
 └── .space-config   # workspace 配置
 ```
 
@@ -82,7 +82,7 @@ SDD（变更管理）:
 └── tasks.md     → 做什么
 
 TDD（代码实现）:
-{code-repo}/
+{code_repo}/
 ├── src/          → 实现
 └── tests/        → 测试驱动
 ```
