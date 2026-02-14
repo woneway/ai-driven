@@ -1,0 +1,59 @@
+# AI-Driven 项目配置
+
+## 概述
+
+`.ai-driven.yaml` 是 ai-driven 项目的配置文件，定义项目特定的质量要求和规范。
+
+## 配置示例
+
+```yaml
+# .ai-driven.yaml
+project:
+  name: "my-project"
+  language: "typescript"
+  framework: "nextjs"
+
+quality:
+  # 最小测试覆盖率 (%)
+  min_coverage: 80
+  
+  # 是否要求测试
+  require_tests: true
+  
+  # 是否要求代码审查
+  require_review: true
+  
+  # 是否要求 E2E 测试
+  require_e2e: true
+
+rules:
+  # 最大函数行数
+  max_function_lines: 50
+  
+  # 最大嵌套深度
+  max_nesting_depth: 4
+  
+  # 是否启用 lint
+  lint: true
+  
+  # 是否启用类型检查
+  type_check: true
+```
+
+## 配置说明
+
+| 字段 | 类型 | 说明 |
+|------|------|------|
+| project.name | string | 项目名称 |
+| project.language | string | 主要语言 |
+| project.framework | string | 主要框架 |
+| quality.min_coverage | number | 最低测试覆盖率 |
+| quality.require_tests | boolean | 是否要求测试 |
+| quality.require_review | boolean | 是否要求代码审查 |
+| quality.require_e2e | boolean | 是否要求 E2E 测试 |
+| rules.max_function_lines | number | 函数最大行数 |
+| rules.max_nesting_depth | number | 最大嵌套深度 |
+
+## 使用
+
+AI 在执行 `/dev` 命令时会自动读取此配置文件，按照配置要求执行质量门禁。
