@@ -4,16 +4,16 @@ globs: "*"
 ---
 # 质量门禁
 
-AI 在执行 `/dev` 命令时，必须自我检查以下质量门禁：
+AI 在执行 `/dev` 命令时，必须自我检查。
 
-## 代码质量检查
+## 质量检查
 
-- [ ] **proposal.md 完整** - 需求分析清晰
-- [ ] **design.md 完整** - 技术设计合理
-- [ ] **tasks.md 完整** - 任务拆解清晰
-- [ ] **有对应的测试** - 每个功能都有测试
-- [ ] **测试通过** - 测试全部通过
-- [ ] **linter 通过** - 代码风格符合规范
+- [ ] proposal.md 完整（需求清晰）
+- [ ] design.md 完整（设计合理）
+- [ ] tasks.md 完整（任务可执行）
+- [ ] 有对应的测试
+- [ ] 测试通过
+- [ ] linter 通过
 
 ## 代码规范
 
@@ -73,8 +73,6 @@ func testScenario_ExpectedBehavior() {
 
 ## 提交规范
 
-提交信息格式：
-
 ```
 [TYPE] Subject
 
@@ -83,10 +81,4 @@ Body (可选)
 Closes #123
 ```
 
-TYPE 可选：
-- `feat`: 新功能
-- `fix`: Bug 修复
-- `docs`: 文档
-- `refactor`: 重构
-- `test`: 测试
-- `chore`: 维护
+TYPE: feat / fix / docs / refactor / test / chore

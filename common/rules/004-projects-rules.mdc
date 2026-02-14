@@ -1,0 +1,53 @@
+---
+description: Workspace 和 Projects 的职责划分。明确哪些操作在哪些目录执行。
+globs: "*"
+---
+
+# Workspace 和 Projects 职责划分
+
+## 目录结构
+
+```
+ai-driven/
+├── workspaces/           # 过程内容管理（变更记录、设计文档）
+│   └── {workspace_name}/
+│       ├── .changes/     # 变更记录
+│       ├── .roles/       # 记忆和角色
+│       └── .specs/       # 规格文档
+│
+└── (外部) ai-projects/   # 纯代码开发目录（由 config/workspaces.yaml 配置）
+    └── {project_name}/   # 只包含代码文件
+        ├── src/
+        ├── tests/
+        └── ...
+```
+
+## 核心原则
+
+**Projects（code_roots）只进行代码开发**：
+- ✅ 编写代码文件
+- ✅ 编写测试文件
+- ✅ 运行测试
+- ✅ 代码审查
+- ❌ **禁止** 创建 `.changes/` 目录
+- ❌ **禁止** 创建 `.roles/` 目录
+- ❌ **禁止** 创建 `.specs/` 目录
+- ❌ **禁止** 创建任何过程管理文档
+
+**Workspace 进行过程内容管理**：
+- ✅ 创建 `.changes/{date}_{slug}/` 变更目录
+- ✅ 编写 `proposal.md`、`design.md`、`tasks.md`
+- ✅ 更新 `.roles/` 记忆文件
+- ❌ 不直接编写业务代码（代码在 projects 中）
+
+## 执行 /dev 命令时的行为
+
+1. **分析需求** → 在 workspace 的 `.changes/` 中创建变更目录
+2. **技术设计** → 在 workspace 的变更目录中编写 `design.md`
+3. **代码实现** → 在 projects（code_roots）中编写代码
+4. **测试验证** → 在 projects 中运行测试
+5. **更新记忆** → 在 workspace 的 `.roles/` 中记录
+
+## 关键约束
+
+> **任何过程管理相关的文件（.changes、.roles、.specs 等）都必须创建在 workspace 目录中，绝不能创建在 projects（code_roots）目录中。**

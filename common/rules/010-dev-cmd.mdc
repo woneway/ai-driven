@@ -1,5 +1,5 @@
 ---
-description: /dev 命令 - AI 驱动开发入口。定义唯一开发命令和执行流程。
+description: /dev 命令 - AI 驱动开发入口。唯一开发命令。
 globs: "*"
 ---
 # /dev 命令
@@ -25,76 +25,54 @@ globs: "*"
 ## 执行流程
 
 ```
-用户需求
-    ↓
-Main Agent 分析
-    ↓
-根据复杂度选择调度策略
-    ↓
-调度子 Agent
-    ↓
-执行并验证
-    ↓
-更新记忆
+用户需求 → 分析 → 创建变更目录 → 调度子 Agent → 执行 → 验证 → 更新记忆
 ```
 
-## 子 Agent 调度
+### 1. 分析需求
 
-### Agent 定义
+判断类型（新功能/Bug/优化/调研/技术债）和复杂度：
+- 小：< 2 小时，单文件改动
+- 中：2 小时 - 1 天，多文件改动  
+- 大：> 1 天，跨模块改动
 
-| Agent | 职责 | 说明 |
-|-------|------|------|
-| planner | 计划 | 需求分析、设计、任务拆解 |
-| executor | 执行 | 代码实现、TDD |
-| reviewer | 审查 | 代码审查 |
-| researcher | 调研 | 技术调研 |
-| qa | 测试 | 测试验证 |
-
-### Task tool 调用
-
-```python
-Task(
-    description="[Agent] 执行: [任务]",
-    subagent_type="generalPurpose",
-    prompt="""
-        # Agent 定义
-        [读取 .cursor/agents/[agent].md]
-
-        # 项目上下文
-        [读取 .space-config]
-
-        # 代码仓库
-        - 代码根目录: [从 CODE_ROOTS 获取]
-
-        # 任务
-        [具体任务描述]
-    """
-)
-```
-
-## 变更结构
+### 2. 创建变更目录
 
 ```
 .changes/{date}_{slug}/
-├── proposal.md    # 为什么做
+├── proposal.md    # 需求分析
 ├── design.md      # 技术设计
 └── tasks.md       # 实施任务
 ```
 
-## 质量门禁
+### 3. 调度子 Agent
 
-AI 自我检查：
+| Agent | 职责 |
+|-------|------|
+| planner | 需求分析、设计、任务拆解 |
+| executor | 代码实现、TDD |
+| reviewer | 代码审查 |
+| researcher | 技术调研 |
+| qa | 测试验证 |
 
-- [ ] proposal.md 完整
-- [ ] design.md 完整
-- [ ] 有对应的测试
-- [ ] 测试通过
-- [ ] linter 通过
+### 复杂度调度
 
-## 记忆更新
+| 复杂度 | 调度 |
+|--------|------|
+| 小 | executor → reviewer |
+| 中 | planner → executor → reviewer |
+| 大 | planner → executor → reviewer → qa |
 
-变更完成后自动更新：
+### 类型跳过规则
 
+| 类型 | 可跳过 |
+|------|--------|
+| Bug 修复 | planner |
+| 调研 | executor, qa |
+| 小优化 | planner, qa |
+
+### 4. 记忆更新
+
+变更完成后更新：
 - `.roles/lessons.md` - 经验教训
 - `.roles/decisions.md` - 架构决策
 - `.roles/prefs.md` - 代码偏好
