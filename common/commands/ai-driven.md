@@ -1,0 +1,151 @@
+# AI-Driven 管理命令
+
+## 概述
+
+这些命令用于管理 ai-driven 本身，包括同步、升级等操作。
+
+## 命令列表
+
+### `/ai-driven:sync`
+
+**同步所有 workspace 的规则和技能**。
+
+```
+用法: /ai-driven:sync
+```
+
+将 `common/` 中的最新规则和技能同步到所有 workspace。
+
+### `/ai-driven:analyze`
+
+**分析所有 workspace 的 feedback，制定升级计划**。
+
+```
+用法: /ai-driven:analyze
+```
+
+1. 读取所有 workspace 的 `.roles/feedback.md`
+2. 汇总分析需要升级的能力
+3. 生成升级计划
+4. 等待用户确认后执行
+
+### `/ai-driven:upgrade`
+
+**执行升级计划**。
+
+```
+用法: /ai-driven:upgrade
+```
+
+根据 `/ai-driven:analyze` 生成的计划：
+- 添加新技能
+- 更新现有规则
+- 同步到所有 workspace
+
+### `/ai-driven:status`
+
+**查看 ai-driven 状态**。
+
+```
+用法: /ai-driven:status
+```
+
+显示：
+- 管理的 workspace 数量
+- 各 workspace 的最后活动时间
+- 待处理的 feedback 数量
+
+---
+
+## 执行流程
+
+### 升级流程
+
+```
+1. 用户: /ai-driven:analyze
+
+2. AI:
+   - 读取 config/workspaces.yaml 获取 workspace 列表
+   - 遍历每个 workspace，读取 .roles/feedback.md
+   - 汇总分析，生成升级建议
+
+3. AI 输出:
+   ## 升级建议
+   
+   ### 需要添加的技能
+   - iOS 调试技能（来自 poker_space）
+   - Java 测试技能（来自 asset_space）
+   
+   ### 需要更新的规则
+   - project.mdc：添加新的质量门禁
+   
+   ### 建议
+   - [计划 1]: 添加 iOS 技能库
+   - [计划 2]: 更新所有 workspace 的规则
+
+4. 用户确认: "好的，执行计划 1"
+
+5. AI: /ai-driven:upgrade
+   - 创建新技能
+   - 更新规则
+   - 同步到相关 workspace
+```
+
+---
+
+## 自动反馈收集
+
+AI 在执行 `/dev` 命令时，会自动识别并记录：
+
+```markdown
+# 反馈给 AI-Driven
+
+## 需要添加的能力
+- [2026-02-14] 需要 iOS 特有的调试技能 - poker_space
+- [2026-02-14] 需要更好的 Java 测试框架支持 - asset_space
+
+## 建议
+- [2026-02-14] 考虑添加数据库迁移相关的技能
+```
+
+---
+
+## 实施细节
+
+### `/ai-driven:analyze` 实现
+
+```python
+# 1. 读取 workspace 列表
+workspaces = read_yaml("config/workspaces.yaml")
+
+# 2. 遍历收集 feedback
+all_feedback = []
+for ws in workspaces:
+    feedback_path = f"{ws.path}/.roles/feedback.md"
+    if exists(feedback_path):
+        all_feedback += read(feedback_path)
+
+# 3. 分析和汇总
+analysis = analyze_feedback(all_feedback)
+
+# 4. 生成建议
+return format_analysis(analysis)
+```
+
+### `/ai-driven:upgrade` 实现
+
+```python
+# 1. 读取升级计划（由 analyze 生成）
+plan = read("config/upgrade-plan.md")
+
+# 2. 执行计划
+for item in plan.items:
+    if item.type == "skill":
+        create_skill(item.name, item.content)
+    elif item.type == "rule":
+        update_rule(item.name, item.content)
+
+# 3. 同步到 workspace
+for ws in plan.affected_workspaces:
+    sync_to_workspace(ws)
+```
