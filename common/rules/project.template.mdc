@@ -1,0 +1,112 @@
+---
+description: 项目命令和上下文
+globs:
+---
+# {{PROJECT_NAME}}
+
+- **规范**: `{{SPEC_ROOT}}/.specs/`
+- **变更**: `{{SPEC_ROOT}}/.changes/`
+- **记忆**: `{{SPEC_ROOT}}/.roles/`
+- **代码仓库**: 见 `.code-workspace`
+- 使用 **简体中文**
+
+---
+
+## 核心命令
+
+### `/dev <需求或问题>`
+
+**唯一开发命令**。人类只需表达需求，AI 自动完成全流程：
+
+1. **分析需求** → 创建 `.changes/{date}_{slug}/proposal.md`
+2. **技术设计** → 创建 `design.md`
+3. **任务拆解** → 创建 `tasks.md`
+4. **实现** → 代码实现 + 单元测试（TDD）
+5. **审查** → Code Review
+6. **测试** → 集成测试
+7. **归档** → 合并到 `.specs/` + 更新 `.roles/`
+
+**支持的需求类型**：
+- 新功能：`/dev 做一个锦标赛模式`
+- Bug 修复：`/dev 新建档案后数据没清空`
+- 优化：`/dev 优化排行榜查询性能`
+- 调研：`/dev 调研 WebSocket 连接管理`
+
+### `/dev:status`
+
+查看当前变更进度
+
+### `/dev:review`
+
+人工代码审查（可选）
+
+---
+
+## 目录结构
+
+```
+{{PROJECT_NAME}}/
+├── .specs/           # 权威规范（当前系统状态）
+│   └── {domain}/
+│       └── spec.md
+│
+├── .changes/        # 变更管理（待实施/实施中）
+│   └── {date}_{slug}/
+│       ├── proposal.md
+│       ├── design.md
+│       └── tasks.md
+│
+├── .roles/          # 共享记忆
+│   ├── decisions.md # 架构决策
+│   ├── lessons.md   # 经验教训
+│   ├── prefs.md     # 代码偏好
+│   └── feedback.md  # 反馈给 ai-driven
+│
+├── .cursor/         # Cursor 配置
+│   ├── skills/     # 技能链接
+│   └── rules/       # 规则
+│
+├── .code-workspace # 代码仓库配置
+└── .space-config   # workspace 配置
+```
+
+---
+
+## SDD + TDD 流程
+
+```
+SDD（变更管理）:
+.changes/{change}/
+├── proposal.md  → 为什么做
+├── design.md    → 怎么做
+└── tasks.md     → 做什么
+
+TDD（代码实现）:
+{code-repo}/
+├── src/          → 实现
+└── tests/        → 测试驱动
+```
+
+---
+
+## 质量门禁
+
+AI 自动执行以下检查：
+
+- [ ] proposal.md 有"为什么做"和"影响范围"
+- [ ] design.md 有"核心流程"和"错误处理"
+- [ ] tasks.md 有可执行的任务列表
+- [ ] 代码有对应的测试
+- [ ] 测试通过
+- [ ] 代码通过 linter
+
+---
+
+## 项目记忆
+
+变更完成后，AI 自动：
+
+1. 将变更内容合并到 `.specs/` 对应的 domain
+2. 提取经验教训 → 写入 `.roles/lessons.md`
+3. 记录架构决策 → 写入 `.roles/decisions.md`
+4. 更新代码偏好 → 写入 `.roles/prefs.md`

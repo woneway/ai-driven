@@ -1,0 +1,35 @@
+---
+description: Superpowers 任务管理
+globs:
+---
+# Superpowers 任务管理
+
+## 任务目录
+
+- **根目录**: `.changes/`
+- **命名格式**: `{YYYYMMDD}_{slug}/`（8位日期 + 描述）
+
+## 执行原则
+
+1. **先设计再实现** - 使用 brainstorming 技能
+2. **小步提交** - 每个任务一个 commit
+3. **测试驱动** - Red → Green → Refactor
+4. **持续验证** - 完成后运行测试
+
+## 任务状态
+
+- `- [ ]` - 未开始
+- `- [-]` - 进行中
+- `- [x]` - 已完成
+
+## 使用技能
+
+| 场景 | 技能 |
+|------|------|
+| 方案讨论 | skill-brainstorming |
+| 写计划 | skill-writing-plans |
+| 执行计划 | skill-executing-plans |
+| TDD 开发 | skill-test-driven-development |
+| 调试 | skill-systematic-debugging |
+| 代码审查 | skill-receiving-code_review |
+| 验证完成 | skill-verification-before-completion |

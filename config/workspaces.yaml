@@ -1,0 +1,9 @@
+# Workspace Configuration
+# This file lists all workspaces managed by ai-driven
+
+workspaces:
+  # - name: example_space
+  #   path: /Users/lianwu/ai/ai-driven/workspaces/example_space
+  #   code_roots:
+  #     - /path/to/code/repo1
+  #     - /path/to/code/repo2
