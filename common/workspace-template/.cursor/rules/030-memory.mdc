@@ -7,43 +7,98 @@ globs: "*"
 
 ## 核心理念
 
-**记忆是闭环的一部分，通过 /verify 自动触发**
+**记忆是闭环的一部分，通过 /dev-verify 自动触发**
 
-## 自动记忆触发
+## 记忆方式
 
-### 主要方式: /verify 自动触发
+使用 Markdown 文件存储记忆，不依赖特定语言：
 
-每次执行 `/verify` 并通过所有检查后，自动调用记忆服务：
+- `.roles/knowledge.md` - 项目知识积累
+- `.roles/decisions.md` - 架构决策
+- `.roles/lessons.md` - 经验教训
+- `.changes/{date}_{slug}/summary.md` - 任务总结
 
-```python
-# /verify 自动执行
-memory = AiDrivenMemory(workspace_name)
-memory.add(f"任务完成: {task_name}")
-```
+## 触发方式
 
-### 次要方式: 手动调用
+### 主要方式: /dev-verify 自动触发
 
-在特殊情况下，也可以手动调用：
+每次执行 `/dev-verify` 时自动更新记忆文件。
 
-```python
-from common.memory.memory_client import AiDrivenMemory
-memory = AiDrivenMemory(workspace_name)
-memory.add("手动记忆的内容")
+### 手动方式: 直接编辑
+
+在特殊情况下，也可以手动编辑记忆文件：
+
+```markdown
+# 项目知识
+
+## 2026-02-15 - 用户认证
+
+- 技术方案：使用 JWT + Refresh Token
+- 关键决策：不在服务端存储 Token
+- 后续注意：考虑使用 HTTP-only Cookie
 ```
 
 ## 记忆内容结构
 
-```markdown
-## 任务: {任务名称}
+### 任务总结 (.changes/{date}_{slug}/summary.md)
 
-### 技术方案
+```markdown
+# 任务完成总结
+
+## 任务名称
+{任务名称}
+
+## 完成时间
+{完成时间}
+
+## 技术方案
 {使用的技术方案描述}
 
-### 遇到的问题
+## 遇到的问题
 {遇到的问题及解决方案}
 
-### 后续注意
+## 后续注意
 {可能的改进点}
+```
+
+### 项目知识 (.roles/knowledge.md)
+
+```markdown
+# 项目知识
+
+## {日期} - {任务名称}
+
+- 技术方案：{摘要}
+- 关键决策：{决策}
+- 后续注意：{改进点}
+```
+
+## 什么时候记忆
+
+- 通过 `/dev-verify` 时自动记忆（主要方式）
+- 手动编辑记忆文件（可选）
+
+## 检索使用
+
+在开始新任务前，AI 应读取相关记忆：
+
+```bash
+# 读取项目知识
+cat .roles/knowledge.md
+
+# 读取架构决策
+cat .roles/decisions.md
+```
+
+## 开发流程
+
+```
+1. /sdd 规范设计
+2. /plan 需求分析
+3. /tdd TDD 实现
+4. /code-review 代码审查
+5. /e2e E2E 测试
+6. /dev-verify 完成闭环 + 记忆
 ```
 
 ## 记忆质量
@@ -57,26 +112,3 @@ memory.add("手动记忆的内容")
 - 模糊不清
 - 过于笼统
 - 缺少上下文
-
-## 检索使用
-
-在开始新任务前，AI 应先检索相关记忆：
-
-```python
-related = memory.search(f"{任务关键词}")
-if related:
-    print("相关记忆:")
-    for r in related:
-        print(f"- {r['content']}")
-```
-
-## 开发流程
-
-```
-1. /sdd 规范设计
-2. /plan 需求分析
-3. /tdd TDD 实现
-4. /code-review 代码审查
-5. /e2e E2E 测试
-6. /verify 验证 + 记忆 ← 自动触发
-```
