@@ -40,6 +40,8 @@ check ".space-config 存在" \
     "[ -f '$TEMPLATE/.space-config' ]"
 check ".gitignore 存在" \
     "[ -f '$TEMPLATE/.gitignore' ]"
+check "无 agents 目录（已移除自定义 agents）" \
+    "[ ! -d '$TEMPLATE/.cursor/agents' ]"
 
 echo ""
 echo "=== 2. 无遗留检查 ==="
@@ -71,12 +73,18 @@ check "无 /opsx: 冒号格式（应为 /opsx-）" \
     "! grep -r '/opsx:' '$TEMPLATE/' --include='*.md' --include='*.mdc' 2>/dev/null | grep -v '^\$'"
 check "team.md 使用 subagent_type 格式" \
     "grep -q 'subagent_type:' '$TEMPLATE/.cursor/commands/team.md'"
-check "team.md 有三阶段结构" \
-    "grep -q '阶段一' '$TEMPLATE/.cursor/commands/team.md'"
+check "team.md 有需求分类" \
+    "grep -q '需求分类' '$TEMPLATE/.cursor/commands/team.md'"
+check "team.md 有轻量/完整模式" \
+    "grep -q '轻量模式' '$TEMPLATE/.cursor/commands/team.md' && grep -q '完整模式' '$TEMPLATE/.cursor/commands/team.md'"
 check "team.md 有 Handoff 格式" \
     "grep -q 'HANDOFF:' '$TEMPLATE/.cursor/commands/team.md'"
 check "team.md 有错误恢复" \
     "grep -q '错误恢复' '$TEMPLATE/.cursor/commands/team.md'"
+check "team.md 有 OpenSpec 前置检查（步骤 0）" \
+    "grep -q '检查.*opsx-new.md.*是否存在' '$TEMPLATE/.cursor/commands/team.md'"
+check "无残留 --yes 参数" \
+    "! grep -r '\-\-yes' '$TEMPLATE/' --include='*.md' --include='*.mdc' 2>/dev/null | grep -v '^\$'"
 
 echo ""
 echo "=== 5. 零重复检查 ==="
@@ -127,6 +135,18 @@ if "$SCRIPTS/init-space.sh" _verify_test 2>/dev/null; then
         "[ ! -d '$TEST_WS/.homunculus' ]"
     check "无 010-ai-driven.mdc" \
         "[ ! -f '$TEST_WS/.cursor/rules/010-ai-driven.mdc' ]"
+    check "OpenSpec opsx-new.md 被生成" \
+        "[ -f '$TEST_WS/.cursor/commands/opsx-new.md' ]"
+    check "OpenSpec opsx-ff.md 被生成" \
+        "[ -f '$TEST_WS/.cursor/commands/opsx-ff.md' ]"
+    check "OpenSpec opsx-verify.md 被生成" \
+        "[ -f '$TEST_WS/.cursor/commands/opsx-verify.md' ]"
+    check "OpenSpec opsx-archive.md 被生成" \
+        "[ -f '$TEST_WS/.cursor/commands/opsx-archive.md' ]"
+    check "OpenSpec openspec/changes/ 目录存在" \
+        "[ -d '$TEST_WS/openspec/changes' ]"
+    check "无 agents 目录" \
+        "[ ! -d '$TEST_WS/.cursor/agents' ]"
 else
     echo "  FAIL: 空 workspace 创建失败"
     FAIL=$((FAIL + 1))
@@ -148,6 +168,8 @@ if [ -d "$TEST_WS" ]; then
         "diff -q '$TEMPLATE/.cursor/commands/team.md' '$TEST_WS/.cursor/commands/team.md'"
     check "sync 后 .space-config 未被改动" \
         "grep -q 'SPACE_NAME=\"_verify_test\"' '$TEST_WS/.space-config'"
+    check "sync 后无 agents 目录（已清理）" \
+        "[ ! -d '$TEST_WS/.cursor/agents' ]"
 fi
 
 # 清理测试 workspace

@@ -9,7 +9,9 @@ alwaysApply: true
 
 ## 入口
 
-/team 是唯一入口。详见 .cursor/commands/team.md。
+/team 是唯一的自主开发入口。详见 .cursor/commands/team.md。
+
+/team 会根据需求类型和复杂度智能路由，调度全局 Sub-Agent 完成开发。
 
 ## 目录规则
 
@@ -19,22 +21,29 @@ alwaysApply: true
 
 ## OpenSpec 工作流
 
-- 所有需求变更 MUST 通过 OpenSpec 工作流管理
+- 所有变更 MUST 通过 OpenSpec 记录，确保 AI 有完整的项目变更历史
+- 完整模式（新功能、复杂任务）：opsx-new → opsx-ff → 实现 → opsx-verify → opsx-archive
+- 轻量模式（小改动、简单 bug）：opsx-new → 只写 proposal.md → 实现 → opsx-archive
 - 变更使用 Delta Spec 格式（ADDED / MODIFIED / REMOVED）
 - 需求强度使用 RFC 2119 关键字（MUST / SHALL / SHOULD / MAY）
 - OpenSpec 命令定义在 .cursor/commands/opsx-*.md（由 openspec init --tools cursor 生成）
 
 ## Sub-Agent 编排
 
-通过 Cursor 的 Task tool 调用（subagent_type 参数）：
+通过 Cursor 的 Task tool 调用全局 Sub-Agent（subagent_type 参数）：
 
-- planner: 需求分析、任务拆分
-- tdd-guide: TDD 实现
-- code-reviewer: 代码完成后审查
-- security-reviewer: 涉及安全的功能
-- e2e-runner: 端到端测试
-- build-error-resolver: 构建失败
+- tdd-guide: TDD 实现（新功能、Bug 修复）
+- code-reviewer: 代码审查
 - architect: 架构决策
+- planner: 需求分析、任务拆分
+- build-error-resolver: 构建失败（TS/通用）
+- go-build-resolver: 构建失败（Go）
+- go-reviewer / python-reviewer: 语言感知审查
+- database-reviewer: 数据库操作审查
+- security-reviewer: 安全审查
+- e2e-runner: 端到端测试
+- doc-updater: 文档更新
+- refactor-cleaner: 死代码清理
 
 ## 技能管理
 

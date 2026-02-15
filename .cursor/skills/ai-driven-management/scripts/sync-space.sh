@@ -37,10 +37,11 @@ for ws in "$WORKSPACES_PATH"/*/; do
     rm -f "$ws/.cursor/rules/010-ai-driven.mdc" 2>/dev/null || true
     rm -f "$ws/AGENTS.md" 2>/dev/null || true
     rm -rf "$ws/.homunculus" 2>/dev/null || true
+    rm -rf "$ws/.cursor/agents" 2>/dev/null || true
 
     # 更新 OpenSpec commands（幂等）
     if command -v openspec &>/dev/null; then
-        (cd "$ws" && openspec init --tools cursor --yes 2>/dev/null) || true
+        (cd "$ws" && openspec init --tools cursor 2>/dev/null) || true
     fi
 
     synced=$((synced + 1))

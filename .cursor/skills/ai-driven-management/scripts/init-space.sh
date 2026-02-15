@@ -115,16 +115,35 @@ cat > "$SPACE_ROOT/${SPACE_NAME}.code-workspace" << EOF
 }
 EOF
 
-# === 4. 初始化 OpenSpec（失败容错）===
+# === 4. 初始化 OpenSpec ===
 echo "初始化 OpenSpec..."
-if command -v openspec &>/dev/null; then
-    if (cd "$SPACE_ROOT" && openspec init --tools cursor --yes 2>/dev/null); then
-        echo "  OpenSpec 已初始化"
+if ! command -v openspec &>/dev/null; then
+    echo "  openspec 未安装，尝试自动安装..."
+    if npm i -g @fission-ai/openspec@latest 2>/dev/null; then
+        echo "  openspec 已安装: $(openspec --version 2>/dev/null)"
     else
-        echo "  警告: OpenSpec 初始化失败，跳过"
+        echo "  警告: openspec 自动安装失败"
+        echo "  手动安装: npm i -g @fission-ai/openspec@latest"
+    fi
+fi
+
+if command -v openspec &>/dev/null; then
+    if (cd "$SPACE_ROOT" && openspec init --tools cursor 2>/dev/null); then
+        # 验证关键文件是否生成
+        if [ -f "$SPACE_ROOT/.cursor/commands/opsx-new.md" ]; then
+            OPSX_COUNT=$(ls "$SPACE_ROOT/.cursor/commands"/opsx-*.md 2>/dev/null | wc -l | tr -d ' ')
+            echo "  OpenSpec 已初始化 ($OPSX_COUNT 个命令)"
+        else
+            echo "  警告: OpenSpec init 完成但未生成 opsx-*.md 命令文件"
+            echo "  手动修复: cd $SPACE_ROOT && openspec init --tools cursor"
+        fi
+    else
+        echo "  警告: OpenSpec 初始化失败"
+        echo "  手动修复: cd $SPACE_ROOT && openspec init --tools cursor"
     fi
 else
-    echo "  警告: openspec 未安装，跳过。安装: npm i -g @fission-ai/openspec@latest"
+    echo "  警告: openspec 未安装，跳过"
+    echo "  安装后修复: npm i -g @fission-ai/openspec@latest && cd $SPACE_ROOT && openspec init --tools cursor"
 fi
 # 容错：确保目录存在（即使 openspec init 失败）
 mkdir -p "$SPACE_ROOT/.cursor/skills" "$SPACE_ROOT/.cursor/commands"
