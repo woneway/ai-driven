@@ -95,20 +95,26 @@ BODY
 # 3. 创建 .code-workspace
 echo "配置 VS Code 工作区..."
 # 使用数组构建 JSON
-FOLDERS=("{\"path\": \".\"}")
+FOLDERS=()
 for code_root in "${CODE_ROOTS[@]}"; do
-    # 验证代码目录存在
+    # 检查代码目录是否存在，不存在则创建
     if [ ! -d "$code_root" ]; then
-        echo "警告: 代码目录不存在: $code_root"
-        continue
+        echo "  → 创建代码目录: $code_root"
+        mkdir -p "$code_root"
     fi
-    # 使用 realpath 获取相对路径
+    # 使用 realpath 获取绝对路径
     CODE_ROOT_ABS="$(cd "$code_root" 2>/dev/null && pwd)" || true
     if [ -n "$CODE_ROOT_ABS" ]; then
         CODE_ROOT_REL="$(realpath --relative-to="$SPACE_ROOT" "$CODE_ROOT_ABS" 2>/dev/null || echo "$code_root")"
         FOLDERS+=("{\"path\": \"$CODE_ROOT_REL\"}")
     fi
 done
+
+# 如果没有有效的 code_root，至少添加 workspace 自身
+if [ ${#FOLDERS[@]} -eq 0 ]; then
+    FOLDERS=("{\"path\": \".\"}")
+fi
+
 # 用 , 连接数组元素
 FOLDERS_JSON=$(IFS=,; echo "${FOLDERS[*]}")
 
