@@ -82,7 +82,7 @@ check "team.md 有 Handoff 格式" \
 check "team.md 有错误恢复" \
     "grep -q '错误恢复' '$TEMPLATE/.cursor/commands/team.md'"
 check "team.md 有 OpenSpec 前置检查（步骤 0）" \
-    "grep -q '检查.*opsx-new.md.*是否存在' '$TEMPLATE/.cursor/commands/team.md'"
+    "grep -q '全局命令.*opsx-new.*是否可用' '$TEMPLATE/.cursor/commands/team.md'"
 check "无残留 --yes 参数" \
     "! grep -r '\-\-yes' '$TEMPLATE/' --include='*.md' --include='*.mdc' 2>/dev/null | grep -v '^\$'"
 
@@ -106,12 +106,22 @@ check "无 .cursor/commands/ai-driven.md（已迁移到 skill）" \
     "[ ! -f '$AI_DRIVEN_ROOT/.cursor/commands/ai-driven.md' ]"
 check "无 bin/ 目录（已迁移到 skill/scripts/）" \
     "[ ! -d '$AI_DRIVEN_ROOT/bin' ]"
+check "setup-global.sh 存在且可执行" \
+    "[ -x '$SCRIPTS/setup-global.sh' ]"
 check "init-space.sh 存在且可执行" \
     "[ -x '$SCRIPTS/init-space.sh' ]"
 check "sync-space.sh 存在且可执行" \
     "[ -x '$SCRIPTS/sync-space.sh' ]"
 check "verify.sh 存在且可执行" \
     "[ -x '$SCRIPTS/verify.sh' ]"
+
+echo ""
+echo "=== 6b. 全局配置检查 ==="
+CURSOR_HOME="${CURSOR_HOME:-$HOME/.cursor}"
+check "全局 opsx 命令已安装" \
+    "[ \$(ls '$CURSOR_HOME/commands'/opsx-*.md 2>/dev/null | wc -l) -ge 8 ]"
+check "全局 openspec skills 已安装" \
+    "[ \$(ls -d '$CURSOR_HOME/skills'/openspec-* 2>/dev/null | wc -l) -ge 8 ]"
 
 echo ""
 echo "=== 7. 创建空 workspace 测试 ==="
@@ -129,22 +139,18 @@ if "$SCRIPTS/init-space.sh" _verify_test 2>/dev/null; then
         "[ -f '$TEST_WS/_verify_test.code-workspace' ]"
     check ".cursor/commands 目录存在" \
         "[ -d '$TEST_WS/.cursor/commands' ]"
-    check ".cursor/skills 目录存在" \
-        "[ -d '$TEST_WS/.cursor/skills' ]"
     check "无 .homunculus 目录" \
         "[ ! -d '$TEST_WS/.homunculus' ]"
     check "无 010-ai-driven.mdc" \
         "[ ! -f '$TEST_WS/.cursor/rules/010-ai-driven.mdc' ]"
-    check "OpenSpec opsx-new.md 被生成" \
-        "[ -f '$TEST_WS/.cursor/commands/opsx-new.md' ]"
-    check "OpenSpec opsx-ff.md 被生成" \
-        "[ -f '$TEST_WS/.cursor/commands/opsx-ff.md' ]"
-    check "OpenSpec opsx-verify.md 被生成" \
-        "[ -f '$TEST_WS/.cursor/commands/opsx-verify.md' ]"
-    check "OpenSpec opsx-archive.md 被生成" \
-        "[ -f '$TEST_WS/.cursor/commands/opsx-archive.md' ]"
+    check "workspace 内无 opsx 命令（已迁移到全局）" \
+        "[ \$(ls '$TEST_WS/.cursor/commands'/opsx-*.md 2>/dev/null | wc -l) -eq 0 ]"
+    check "workspace 内无 openspec skills（已迁移到全局）" \
+        "[ \$(ls -d '$TEST_WS/.cursor/skills'/openspec-* 2>/dev/null | wc -l) -eq 0 ]"
     check "OpenSpec openspec/changes/ 目录存在" \
         "[ -d '$TEST_WS/openspec/changes' ]"
+    check "OpenSpec openspec/specs/ 目录存在" \
+        "[ -d '$TEST_WS/openspec/specs' ]"
     check "无 agents 目录" \
         "[ ! -d '$TEST_WS/.cursor/agents' ]"
 else
@@ -170,6 +176,10 @@ if [ -d "$TEST_WS" ]; then
         "grep -q 'SPACE_NAME=\"_verify_test\"' '$TEST_WS/.space-config'"
     check "sync 后无 agents 目录（已清理）" \
         "[ ! -d '$TEST_WS/.cursor/agents' ]"
+    check "sync 后无 opsx 命令（已迁移到全局）" \
+        "[ \$(ls '$TEST_WS/.cursor/commands'/opsx-*.md 2>/dev/null | wc -l) -eq 0 ]"
+    check "sync 后无 openspec skills（已迁移到全局）" \
+        "[ \$(ls -d '$TEST_WS/.cursor/skills'/openspec-* 2>/dev/null | wc -l) -eq 0 ]"
 fi
 
 # 清理测试 workspace

@@ -115,38 +115,38 @@ cat > "$SPACE_ROOT/${SPACE_NAME}.code-workspace" << EOF
 }
 EOF
 
-# === 4. 初始化 OpenSpec ===
-echo "初始化 OpenSpec..."
-if ! command -v openspec &>/dev/null; then
-    echo "  openspec 未安装，尝试自动安装..."
-    if npm i -g @fission-ai/openspec@latest 2>/dev/null; then
-        echo "  openspec 已安装: $(openspec --version 2>/dev/null)"
-    else
-        echo "  警告: openspec 自动安装失败"
-        echo "  手动安装: npm i -g @fission-ai/openspec@latest"
-    fi
+# === 4. 初始化 OpenSpec 项目目录 ===
+echo "初始化 OpenSpec 项目目录..."
+CURSOR_HOME="${CURSOR_HOME:-$HOME/.cursor}"
+
+# 检查全局 opsx 命令是否已安装
+GLOBAL_OPSX_COUNT=$(ls "$CURSOR_HOME/commands"/opsx-*.md 2>/dev/null | wc -l | tr -d ' ')
+if [ "$GLOBAL_OPSX_COUNT" -ge 8 ]; then
+    echo "  全局 opsx 命令已就绪 ($GLOBAL_OPSX_COUNT 个)"
+else
+    echo "  警告: 全局 opsx 命令未安装或不完整 ($GLOBAL_OPSX_COUNT 个)"
+    echo "  请先运行: bash $AI_DRIVEN_ROOT/.cursor/skills/ai-driven-management/scripts/setup-global.sh"
 fi
 
+# 只创建 openspec/ 项目目录（变更记录用），不在 workspace 内生成 commands/skills
 if command -v openspec &>/dev/null; then
+    # openspec init 会创建 openspec/ 目录结构
     if (cd "$SPACE_ROOT" && openspec init --tools cursor 2>/dev/null); then
-        # 验证关键文件是否生成
-        if [ -f "$SPACE_ROOT/.cursor/commands/opsx-new.md" ]; then
-            OPSX_COUNT=$(ls "$SPACE_ROOT/.cursor/commands"/opsx-*.md 2>/dev/null | wc -l | tr -d ' ')
-            echo "  OpenSpec 已初始化 ($OPSX_COUNT 个命令)"
-        else
-            echo "  警告: OpenSpec init 完成但未生成 opsx-*.md 命令文件"
-            echo "  手动修复: cd $SPACE_ROOT && openspec init --tools cursor"
-        fi
+        echo "  OpenSpec 项目目录已创建"
     else
-        echo "  警告: OpenSpec 初始化失败"
-        echo "  手动修复: cd $SPACE_ROOT && openspec init --tools cursor"
+        echo "  警告: OpenSpec 初始化失败，手动创建目录"
+        mkdir -p "$SPACE_ROOT/openspec/changes" "$SPACE_ROOT/openspec/specs"
     fi
+    # 清理 workspace 内的 opsx 命令和 skills（已在全局安装）
+    rm -f "$SPACE_ROOT/.cursor/commands"/opsx-*.md 2>/dev/null || true
+    rm -rf "$SPACE_ROOT/.cursor/skills"/openspec-* 2>/dev/null || true
 else
-    echo "  警告: openspec 未安装，跳过"
-    echo "  安装后修复: npm i -g @fission-ai/openspec@latest && cd $SPACE_ROOT && openspec init --tools cursor"
+    echo "  openspec 未安装，手动创建目录"
+    mkdir -p "$SPACE_ROOT/openspec/changes" "$SPACE_ROOT/openspec/specs"
+    echo "  安装 openspec: npm i -g @fission-ai/openspec@latest"
 fi
-# 容错：确保目录存在（即使 openspec init 失败）
-mkdir -p "$SPACE_ROOT/.cursor/skills" "$SPACE_ROOT/.cursor/commands"
+# 容错：确保目录存在
+mkdir -p "$SPACE_ROOT/.cursor/commands" "$SPACE_ROOT/.cursor/rules"
 
 # === 5. 追加 .gitignore 规则 ===
 for code_root in "${CODE_ROOTS[@]}"; do

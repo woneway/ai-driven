@@ -26,14 +26,19 @@ alwaysApply: true
 - 轻量模式（小改动、简单 bug）：opsx-new → 只写 proposal.md → 实现 → opsx-archive
 - 变更使用 Delta Spec 格式（ADDED / MODIFIED / REMOVED）
 - 需求强度使用 RFC 2119 关键字（MUST / SHALL / SHOULD / MAY）
-- OpenSpec 命令定义在 .cursor/commands/opsx-*.md（由 openspec init --tools cursor 生成）
+- OpenSpec 命令（/opsx-*）已安装在全局 ~/.cursor/commands/，所有 workspace 共享
+- openspec/ 目录是每个 workspace 的变更记录目录
 
 ## Sub-Agent 编排
 
-通过 Cursor 的 Task tool 调用全局 Sub-Agent（subagent_type 参数）：
+主 Agent 是编排者，NOT 执行者。代码实现和审查 MUST 通过 Task tool 委派给 Sub-Agent。
+
+MUST 实际调用 Task tool 函数（传入 subagent_type、description、prompt 参数），NOT 只是在回复中提到 Sub-Agent。
+
+可用 Sub-Agent（通过 Task tool 的 subagent_type 参数指定）：
 
 - tdd-guide: TDD 实现（新功能、Bug 修复）
-- code-reviewer: 代码审查
+- code-reviewer: 代码审查（每次代码变更后 MUST 调用）
 - architect: 架构决策
 - planner: 需求分析、任务拆分
 - build-error-resolver: 构建失败（TS/通用）

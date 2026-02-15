@@ -11,6 +11,7 @@ description: Manages the ai-driven framework. Creates, syncs, verifies, and upgr
 
 根据用户输入选择对应流程：
 
+- `/ai-driven:setup` -> Setup 流程（全局初始化）
 - `/ai-driven:init` -> Init 流程
 - `/ai-driven:sync` -> 直接执行 `bash scripts/sync-space.sh`
 - `/ai-driven:verify` -> 直接执行 `bash scripts/verify.sh`
@@ -19,6 +20,28 @@ description: Manages the ai-driven framework. Creates, syncs, verifies, and upgr
 - `/ai-driven:status` -> Status 流程
 
 所有脚本路径相对于此 skill 目录：`.cursor/skills/ai-driven-management/scripts/`
+
+## Setup 流程（全局初始化）
+
+初始化全局 Cursor 配置，安装 OpenSpec、ECC 等工具的 skills/commands/rules 到 `~/.cursor/`。
+
+1. 使用 AskQuestion 收集参数：
+
+```
+问题 1: "安装哪些组件？"
+  选项: ["全部", "只安装 OpenSpec", "只安装 Everything Claude Code"]
+
+问题 2: "ECC 语言规则？"（如果安装 ECC）
+  选项: ["typescript", "python", "golang", "typescript python", "全部"]
+```
+
+2. 执行：
+
+```bash
+bash scripts/setup-global.sh [--openspec-only|--ecc-only] [--ecc-langs "<langs>"] --force
+```
+
+3. 提示用户重启 Cursor IDE 使全局命令生效。
 
 ## Init 流程
 
@@ -84,6 +107,7 @@ bash scripts/init-space.sh <space_name> [code_root1] [code_root2] ...
 
 | 脚本 | 用途 | 需要参数 |
 |------|------|----------|
+| `scripts/setup-global.sh` | 全局初始化（OpenSpec/ECC） | [options] |
 | `scripts/init-space.sh` | 创建 workspace | space_name, [code_roots...] |
 | `scripts/sync-space.sh` | 同步所有 workspace | 无 |
 | `scripts/verify.sh` | 验证框架健康 | 无 |
