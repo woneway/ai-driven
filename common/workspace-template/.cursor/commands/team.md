@@ -84,11 +84,22 @@ mkdir -p openspec/specs/${TIMESTAMP}_<feature-name>
 
 - `/tdd-guide` - 快速实现 + TDD 验证（核心）
 - `/code-reviewer` - 审查发现问题
-- `/openspec` - **边做边记**，记录规范和进度（不是前置设计）
+- `/openspec` - 需求规范 + 进度管理（**先分析需求**）
 
-## 工作流：边做边记
+## 工作流：需求驱动
 
-### 1. 快速实现 + TDD（先完成，再完美）
+### 1. 先分析需求（必须！）
+
+```
+@openspec 分析需求，生成规范和任务列表
+→ 创建 spec.md（需求规范）
+→ 创建 tasks.md（实施任务）
+→ 确认任务清单后再开始实现
+```
+
+**重要**：没有规范不能写代码！必须先有 spec.md。
+
+### 2. 快速实现 + TDD（先完成，再完美）
 
 ```
 @tdd-guide 实现用户登录
@@ -124,7 +135,7 @@ mkdir -p openspec/specs/${TIMESTAMP}_<feature-name>
 → 直到全部通过
 ```
 
-### 5. **边做边记**（OpenSpec）
+### 5. 规范同步（OpenSpec）
 
 ```
 → 完成后更新 spec.md 反映最终实现
@@ -134,25 +145,24 @@ mkdir -p openspec/specs/${TIMESTAMP}_<feature-name>
 
 ## OpenSpec 集成
 
-> **重要**：OpenSpec 是**边做边记**，不是前置设计。
+> **重要**：OpenSpec 是**需求规范工具**，先分析需求再实现。
 
 ### 核心理念
 
-| 前置设计 | 边做边记 |
+| 旧模式（无规范） | 需求驱动 |
 |----------|----------|
-| 先写完 spec 再写代码 | 先写代码，过程中记录 spec |
+| 直接写代码，边想边做 | 先写 spec 再写代码 |
 | 设计阶段解决所有问题 | 迭代中发现问题 |
 | 一次性完成 | 持续更新 |
 
 ### 使用方式
 
 ```bash
-# 1. 先实现功能，边做边记
-# 2. 完成后更新 spec.md
-# 3. 更新 tasks.md 标记进度
+# 1. 先分析需求，生成规范和任务
+@openspec 分析需求
 
-# 可选：如有需要，用 openspec 生成 proposal
-openspec proposal:create <description>
+# 2. 按任务列表实现功能，边做边更新规范
+# 3. 更新 tasks.md 标记进度
 ```
 
 ### 目录结构

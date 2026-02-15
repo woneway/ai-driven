@@ -1,8 +1,10 @@
 # Workspace Configuration
 # 此文件由 init-space.sh 自动生成，请勿手动编辑
+# 迁移时使用：修改 CODE_ROOTS_ABS 后重新运行 init-space.sh
 
 SPACE_NAME="{{SPACE_NAME}}"
 CODE_ROOTS="{{CODE_ROOTS}}"
+CODE_ROOTS_ABS="{{CODE_ROOTS_ABS}}"
 
 # Agent Teams (使用 /team 命令)
 # 详细说明：见 .cursor/commands/team.md
