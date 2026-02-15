@@ -7,15 +7,23 @@
 #
 # 用法:
 #   bash .cursor/skills/ai-driven-management/scripts/verify.sh
+#
+# 环境变量（详见 common.sh）:
+#   AI_ROOT            ai-driven 所在的父目录
+#   AI_DRIVEN_ROOT     ai-driven 仓库根目录
+#   WORKSPACES_PATH    自定义 workspaces 存放路径
 # =============================================================================
 
 set -e
 
-# scripts/ -> ai-driven-management/ -> skills/ -> .cursor/ -> ai-driven root
-AI_DRIVEN_ROOT="$(cd "$(dirname "$0")/../../../.." && pwd)"
-TEMPLATE="$AI_DRIVEN_ROOT/common/workspace-template"
-WORKSPACES_PATH="${WORKSPACES_PATH:-$AI_DRIVEN_ROOT/workspaces}"
+# === 加载公共配置 ===
+CALLER_SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+source "$CALLER_SCRIPT_DIR/common.sh"
+_validate_ai_driven_root
+
+TEMPLATE="$TEMPLATE_DIR"
 TEST_WS="$WORKSPACES_PATH/_verify_test"
+SCRIPTS="$CALLER_SCRIPT_DIR"
 PASS=0
 FAIL=0
 
@@ -30,6 +38,10 @@ check() {
         FAIL=$((FAIL + 1))
     fi
 }
+
+echo "=== 路径信息 ==="
+_show_paths
+echo ""
 
 echo "=== 1. 模板结构检查 ==="
 check "ai-driven.mdc 存在" \
@@ -97,7 +109,6 @@ check "team.md 不含 MUST 目录规则" \
 
 echo ""
 echo "=== 6. Skill 和脚本检查 ==="
-SCRIPTS="$AI_DRIVEN_ROOT/.cursor/skills/ai-driven-management/scripts"
 check "SKILL.md 存在" \
     "[ -f '$AI_DRIVEN_ROOT/.cursor/skills/ai-driven-management/SKILL.md' ]"
 check "SKILL.md 有 name 和 description" \
@@ -106,6 +117,8 @@ check "无 .cursor/commands/ai-driven.md（已迁移到 skill）" \
     "[ ! -f '$AI_DRIVEN_ROOT/.cursor/commands/ai-driven.md' ]"
 check "无 bin/ 目录（已迁移到 skill/scripts/）" \
     "[ ! -d '$AI_DRIVEN_ROOT/bin' ]"
+check "common.sh 存在" \
+    "[ -f '$SCRIPTS/common.sh' ]"
 check "setup-global.sh 存在且可执行" \
     "[ -x '$SCRIPTS/setup-global.sh' ]"
 check "init-space.sh 存在且可执行" \
@@ -117,11 +130,18 @@ check "verify.sh 存在且可执行" \
 
 echo ""
 echo "=== 6b. 全局配置检查 ==="
-CURSOR_HOME="${CURSOR_HOME:-$HOME/.cursor}"
+check "global_cursor 目录存在" \
+    "[ -d '$GLOBAL_CURSOR_DIR' ]"
 check "全局 opsx 命令已安装" \
     "[ \$(ls '$CURSOR_HOME/commands'/opsx-*.md 2>/dev/null | wc -l) -ge 8 ]"
 check "全局 openspec skills 已安装" \
     "[ \$(ls -d '$CURSOR_HOME/skills'/openspec-* 2>/dev/null | wc -l) -ge 8 ]"
+
+# 检查 symlink
+for dir in $MANAGED_DIRS; do
+    check "symlink ~/.cursor/$dir 存在" \
+        "[ -L '$CURSOR_HOME/$dir' ]"
+done
 
 echo ""
 echo "=== 7. 创建空 workspace 测试 ==="

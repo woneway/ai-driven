@@ -23,7 +23,9 @@ description: Manages the ai-driven framework. Creates, syncs, verifies, and upgr
 
 ## Setup 流程（全局初始化）
 
-初始化全局 Cursor 配置，安装 OpenSpec、ECC 等工具的 skills/commands/rules 到 `~/.cursor/`。
+初始化全局 Cursor 配置，安装 OpenSpec、ECC 等工具到 `common/global_cursor/`，并通过 symlink 挂载到 `~/.cursor/`。
+
+所有路径通过 `AI_ROOT` 环境变量配置，`ai-driven` 可放在任意位置。
 
 1. 使用 AskQuestion 收集参数：
 
@@ -42,6 +44,13 @@ bash scripts/setup-global.sh [--openspec-only|--ecc-only] [--ecc-langs "<langs>"
 ```
 
 3. 提示用户重启 Cursor IDE 使全局命令生效。
+
+**路径配置**：所有脚本通过 `common.sh` 统一管理路径，支持以下环境变量：
+- `AI_ROOT` - ai-driven 所在的父目录（如 `~/ai`）
+- `AI_DRIVEN_ROOT` - 直接指定 ai-driven 根目录
+- `CURSOR_HOME` - Cursor 配置目录（默认 `~/.cursor`）
+- `GLOBAL_CURSOR_DIR` - global_cursor 路径
+- `WORKSPACES_PATH` - workspaces 存放路径
 
 ## Init 流程
 
@@ -107,7 +116,8 @@ bash scripts/init-space.sh <space_name> [code_root1] [code_root2] ...
 
 | 脚本 | 用途 | 需要参数 |
 |------|------|----------|
-| `scripts/setup-global.sh` | 全局初始化（OpenSpec/ECC） | [options] |
+| `scripts/common.sh` | 公共路径配置（被其他脚本 source） | 无 |
+| `scripts/setup-global.sh` | 全局初始化（OpenSpec/ECC/symlink） | [options] |
 | `scripts/init-space.sh` | 创建 workspace | space_name, [code_roots...] |
 | `scripts/sync-space.sh` | 同步所有 workspace | 无 |
 | `scripts/verify.sh` | 验证框架健康 | 无 |

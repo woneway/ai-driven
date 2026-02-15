@@ -10,17 +10,18 @@
 #   bash scripts/init-space.sh poker ../ai-projects/ios-poker-game   # 带代码目录
 #   bash scripts/init-space.sh app "../frontend" "../backend"        # 多代码目录
 #
-# 环境变量:
-#   WORKSPACES_PATH  自定义 workspaces 存放路径（默认: ai-driven/workspaces）
+# 环境变量（详见 common.sh）:
+#   AI_ROOT            ai-driven 所在的父目录
+#   AI_DRIVEN_ROOT     ai-driven 仓库根目录
+#   WORKSPACES_PATH    自定义 workspaces 存放路径
 # =============================================================================
 
 set -e
 
-# === 可配置路径（环境变量 > 默认值）===
-# scripts/ -> ai-driven-management/ -> skills/ -> .cursor/ -> ai-driven root
-AI_DRIVEN_ROOT="$(cd "$(dirname "$0")/../../../.." && pwd)"
-WORKSPACES_PATH="${WORKSPACES_PATH:-$AI_DRIVEN_ROOT/workspaces}"
-TEMPLATE_DIR="$AI_DRIVEN_ROOT/common/workspace-template"
+# === 加载公共配置 ===
+CALLER_SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+source "$CALLER_SCRIPT_DIR/common.sh"
+_validate_ai_driven_root
 
 # === 解析参数 ===
 SPACE_NAME="$1"
@@ -55,6 +56,8 @@ if [ ! -d "$TEMPLATE_DIR" ]; then
 fi
 
 echo "创建 workspace: $SPACE_NAME"
+info "AI_ROOT: $AI_ROOT"
+info "AI_DRIVEN_ROOT: $AI_DRIVEN_ROOT"
 [ ${#CODE_ROOTS[@]} -gt 0 ] && echo "  代码目录: ${CODE_ROOTS[*]}"
 echo ""
 
@@ -117,7 +120,6 @@ EOF
 
 # === 4. 初始化 OpenSpec 项目目录 ===
 echo "初始化 OpenSpec 项目目录..."
-CURSOR_HOME="${CURSOR_HOME:-$HOME/.cursor}"
 
 # 检查全局 opsx 命令是否已安装
 GLOBAL_OPSX_COUNT=$(ls "$CURSOR_HOME/commands"/opsx-*.md 2>/dev/null | wc -l | tr -d ' ')
@@ -125,12 +127,11 @@ if [ "$GLOBAL_OPSX_COUNT" -ge 8 ]; then
     echo "  全局 opsx 命令已就绪 ($GLOBAL_OPSX_COUNT 个)"
 else
     echo "  警告: 全局 opsx 命令未安装或不完整 ($GLOBAL_OPSX_COUNT 个)"
-    echo "  请先运行: bash $AI_DRIVEN_ROOT/.cursor/skills/ai-driven-management/scripts/setup-global.sh"
+    echo "  请先运行: bash $CALLER_SCRIPT_DIR/setup-global.sh"
 fi
 
 # 只创建 openspec/ 项目目录（变更记录用），不在 workspace 内生成 commands/skills
 if command -v openspec &>/dev/null; then
-    # --tools none: 只创建 openspec/ 目录结构，不生成 commands/skills
     if (cd "$SPACE_ROOT" && openspec init --tools none 2>/dev/null); then
         echo "  OpenSpec 项目目录已创建"
     else

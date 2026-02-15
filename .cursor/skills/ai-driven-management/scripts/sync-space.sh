@@ -8,16 +8,18 @@
 # 用法:
 #   bash .cursor/skills/ai-driven-management/scripts/sync-space.sh
 #
-# 环境变量:
-#   WORKSPACES_PATH  自定义 workspaces 存放路径（默认: ai-driven/workspaces）
+# 环境变量（详见 common.sh）:
+#   AI_ROOT            ai-driven 所在的父目录
+#   AI_DRIVEN_ROOT     ai-driven 仓库根目录
+#   WORKSPACES_PATH    自定义 workspaces 存放路径
 # =============================================================================
 
 set -e
 
-# scripts/ -> ai-driven-management/ -> skills/ -> .cursor/ -> ai-driven root
-AI_DRIVEN_ROOT="$(cd "$(dirname "$0")/../../../.." && pwd)"
-WORKSPACES_PATH="${WORKSPACES_PATH:-$AI_DRIVEN_ROOT/workspaces}"
-TEMPLATE="$AI_DRIVEN_ROOT/common/workspace-template"
+# === 加载公共配置 ===
+CALLER_SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+source "$CALLER_SCRIPT_DIR/common.sh"
+_validate_ai_driven_root
 
 synced=0
 
@@ -30,8 +32,8 @@ for ws in "$WORKSPACES_PATH"/*/; do
 
     # 同步框架文件（直接覆盖）
     mkdir -p "$ws/.cursor/commands" "$ws/.cursor/rules"
-    cp "$TEMPLATE/.cursor/commands/team.md" "$ws/.cursor/commands/team.md"
-    cp "$TEMPLATE/.cursor/rules/ai-driven.mdc" "$ws/.cursor/rules/ai-driven.mdc"
+    cp "$TEMPLATE_DIR/.cursor/commands/team.md" "$ws/.cursor/commands/team.md"
+    cp "$TEMPLATE_DIR/.cursor/rules/ai-driven.mdc" "$ws/.cursor/rules/ai-driven.mdc"
 
     # 清理旧文件（如果存在）
     rm -f "$ws/.cursor/rules/010-ai-driven.mdc" 2>/dev/null || true
