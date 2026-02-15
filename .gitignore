@@ -4,5 +4,4 @@
 # 忽略所有 workspace（它们各自独立管理 git）
 workspaces/*/
 
-# 保留 workspaces 目录本身
-!workspaces/
+workspaces

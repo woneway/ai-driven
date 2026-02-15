@@ -1,100 +1,102 @@
 # AI-Driven
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+人只说需求，AI 全自动完成开发。
 
-**AI 自主开发，人只验收结果。**
+## 前置要求
 
-一个让 AI 能够自主完成全栈开发的框架，人只需要表达需求，AI 会自动完成设计、开发、测试和部署。
-
-## 目标
-
-```
-人: /team 做一个用户认证
-AI: → 自动完成全部开发 → 完成
-```
-
-## 特性
-
-- 🤖 **AI 全自主** - 从需求到交付全程自动化
-- 👤 **人只验收** - 无需参与开发过程，只看结果
-- 🔄 **自迭代** - 完成后自动总结经验，持续优化
-- 🛠️ **开箱即用** - 几分钟内启动第一个 AI 开发项目
-
-## 原则
-
-- 人只说需求
-- AI 全自动
-- 失败自己修
-- 完成后自迭代
+- [Cursor IDE](https://cursor.sh/)
+- Node.js 20+
+- 全局 `~/.cursor/` 配置（[everything-claude-code](https://github.com/affaan-m/everything-claude-code) 提供 skills/rules/agents）
 
 ## 快速开始
 
-### 前置要求
-
-- macOS / Linux
-- Cursor IDE (或 VSCode + Claude Code)
-- Git
-
-### 安装
-
 ```bash
-# 克隆项目
-git clone https://github.com/yourusername/ai-driven.git
-cd ai-driven
+# 创建带代码目录的 workspace
+bash .cursor/skills/ai-driven-management/scripts/init-space.sh my_app ../ai-projects/my-app
 
-# 创建第一个 workspace
-./bin/init-space.sh my_workspace ../ai-projects/my-project
+# 或创建空 workspace
+bash .cursor/skills/ai-driven-management/scripts/init-space.sh my_app
 ```
 
-### 使用
-
-1. 双击打开生成的 `my_workspace.code-workspace`
-2. 在 Cursor 中输入需求：
+打开生成的 `.code-workspace` 文件，输入：
 
 ```
-/team 做一个锦标赛功能
+/team 做一个用户认证功能
 ```
 
-3. AI 会自动完成全部开发
+AI 会自动完成全部开发工作。
 
 ## 目录结构
 
 ```
 ai-driven/
-├── bin/
-│   └── init-space.sh          # 创建新 workspace
-├── common/
-│   └── workspace-template/    # 工作空间模板
-├── workspaces/                # 所有工作空间
 ├── .cursor/
-│   ├── commands/              # 全局命令
-│   ├── rules/                 # AI 行为规则
-│   └── skills/                # 技能库
-└── README.md
+│   └── skills/
+│       └── ai-driven-management/   # 框架管理 skill
+│           ├── SKILL.md            # 管理能力说明
+│           └── scripts/
+│               ├── init-space.sh   # 创建新 workspace
+│               ├── sync-space.sh   # 同步升级所有 workspace
+│               └── verify.sh       # 自动化验证
+├── common/
+│   └── workspace-template/         # workspace 模板（唯一 source of truth）
+└── workspaces/                     # 所有 workspace
 ```
 
-## 核心命令
+## Workspace 结构
 
-| 命令 | 说明 |
+每个 workspace 创建后包含：
+
+```
+workspace/
+├── .cursor/
+│   ├── commands/
+│   │   ├── team.md         # /team 命令入口
+│   │   └── opsx-*.md       # OpenSpec 命令（自动生成）
+│   ├── rules/
+│   │   └── ai-driven.mdc   # 核心约束规则
+│   └── skills/             # OpenSpec 技能（自动生成）
+├── openspec/               # 需求规范目录
+├── .space-config           # workspace 配置
+└── .code-workspace         # Cursor 工作区文件
+```
+
+## 升级
+
+当框架更新后，同步到所有已有 workspace：
+
+```bash
+bash .cursor/skills/ai-driven-management/scripts/sync-space.sh
+```
+
+同步会覆盖 `ai-driven.mdc` 和 `team.md`，不会动 `.space-config` 和 `.gitignore`。
+
+## 验证
+
+运行自动化验证，检查模板结构和内容：
+
+```bash
+bash .cursor/skills/ai-driven-management/scripts/verify.sh
+```
+
+## 管理命令
+
+在 ai-driven 根目录的 Cursor 窗口中，AI 会自动发现 `ai-driven-management` skill：
+
+| 命令 | 用途 |
 |------|------|
-| `/team <需求>` | 让 AI 完成一个开发任务 |
-| `/team:review` | AI 自审代码质量 |
-| `/team:test` | 运行测试 |
+| `/ai-driven:init` | 创建新 workspace |
+| `/ai-driven:sync` | 同步框架文件到所有 workspace |
+| `/ai-driven:analyze` | 分析 workspace 发现改进机会 |
+| `/ai-driven:upgrade` | 升级框架能力 |
+| `/ai-driven:verify` | 验证框架健康状态 |
+| `/ai-driven:status` | 查看管理状态 |
 
-## 参考
+## 核心依赖
 
-- [OpenSpec](https://openspec.dev/)
-- [everything-claude-code](https://github.com/affaan-m/everything-claude-code)
+- [OpenSpec](https://github.com/Fission-AI/OpenSpec) -- 需求规范与工作流管理
+- [everything-claude-code](https://github.com/affaan-m/everything-claude-code) -- 全局 skills/rules/agents
 
 ## 许可证
 
-本项目基于 [MIT](LICENSE) 许可证开源。
-
-## 鸣谢
-
-- [Cursor IDE](https://cursor.sh/) - AI 增强的代码编辑器
-- [Claude Code](https://claude.com/claude-code) - AI 编程助手
-
----
-
-**愿景：让 AI 成为真正的开发者，人做真正的产品经理。**
+[MIT](LICENSE)

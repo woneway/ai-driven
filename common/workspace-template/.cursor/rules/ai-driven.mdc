@@ -1,0 +1,42 @@
+---
+description: AI-Driven workspace 核心约束与编排规则。
+alwaysApply: true
+---
+
+# AI-Driven
+
+人只说需求，AI 全自动完成。失败自己修，中间不需要人确认。
+
+## 入口
+
+/team 是唯一入口。详见 .cursor/commands/team.md。
+
+## 目录规则
+
+- 代码 MUST 写到 CODE_ROOTS 指定的 project 目录，NOT workspace 根目录
+- openspec/ 是独立的规范目录，NOT 代码目录
+- 查看项目路径：读取 .space-config 文件的 CODE_ROOTS_ABS 字段
+
+## OpenSpec 工作流
+
+- 所有需求变更 MUST 通过 OpenSpec 工作流管理
+- 变更使用 Delta Spec 格式（ADDED / MODIFIED / REMOVED）
+- 需求强度使用 RFC 2119 关键字（MUST / SHALL / SHOULD / MAY）
+- OpenSpec 命令定义在 .cursor/commands/opsx-*.md（由 openspec init --tools cursor 生成）
+
+## Sub-Agent 编排
+
+通过 Cursor 的 Task tool 调用（subagent_type 参数）：
+
+- planner: 需求分析、任务拆分
+- tdd-guide: TDD 实现
+- code-reviewer: 代码完成后审查
+- security-reviewer: 涉及安全的功能
+- e2e-runner: 端到端测试
+- build-error-resolver: 构建失败
+- architect: 架构决策
+
+## 技能管理
+
+需要新技能时：先搜索 npx skills find，找到则 npx skills add -g -y；
+未找到且为项目业务知识则使用 create-skill skill 按规范创建。
