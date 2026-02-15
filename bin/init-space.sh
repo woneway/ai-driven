@@ -69,15 +69,37 @@ for f in "$TEMPLATE_DIR"/.*; do
     cp -r "$f" "$SPACE_ROOT/" 2>/dev/null || true
 done
 
+# 删除可能存在的 .code-workspace（稍后会重新生成）
+rm -f "$SPACE_ROOT"/.code-workspace "$SPACE_ROOT"/*.code-workspace 2>/dev/null || true
+
 # 2. 创建 .space-config（保留模板注释）
 echo "创建配置文件..."
-cat > "$SPACE_ROOT/.space-config" << 'HEADER'
+
+# 先收集所有绝对路径
+CODE_ROOTS_ABS_LIST=()
+for code_root in "${CODE_ROOTS[@]}"; do
+    # 相对路径基于用户运行脚本时的工作目录解析，绝对路径直接使用
+    if [[ "$code_root" = /* ]]; then
+        CODE_ROOT_ABS="$code_root"
+    else
+        CODE_ROOT_ABS="$(cd "$code_root" 2>/dev/null && pwd)" || CODE_ROOT_ABS=""
+    fi
+    if [ -n "$CODE_ROOT_ABS" ] && [ -d "$CODE_ROOT_ABS" ]; then
+        CODE_ROOTS_ABS_LIST+=("$CODE_ROOT_ABS")
+    fi
+done
+
+# 合并为逗号分隔的字符串
+CODE_ROOTS_ABS_STR="$(IFS=,; echo "${CODE_ROOTS_ABS_LIST[*]}")"
+
+cat > "$SPACE_ROOT/.space-config" << HEADER
 # Workspace Configuration
 # 此文件由 init-space.sh 自动生成，请勿手动编辑
-HEADER
-echo "SPACE_NAME=\"$SPACE_NAME\"" >> "$SPACE_ROOT/.space-config"
-echo "CODE_ROOTS=\"${CODE_ROOTS[*]}\"" >> "$SPACE_ROOT/.space-config"
-cat >> "$SPACE_ROOT/.space-config" << 'BODY'
+# 迁移时使用：修改 CODE_ROOTS_ABS 后运行 regenerate-workspace.sh
+
+SPACE_NAME="$SPACE_NAME"
+CODE_ROOTS="${CODE_ROOTS[*]}"
+CODE_ROOTS_ABS="$CODE_ROOTS_ABS_STR"
 
 # Agent Teams (使用 /team 命令)
 # 详细说明：见 .cursor/commands/team.md
@@ -90,35 +112,47 @@ cat >> "$SPACE_ROOT/.space-config" << 'BODY'
 #   使用: @tdd-guide sub-agent
 # - Code Review: 代码审查
 #   使用: @code-reviewer sub-agent
-BODY
+
+HEADER
 
 # 3. 创建 .code-workspace
 echo "配置 VS Code 工作区..."
-# 使用数组构建 JSON
-FOLDERS=()
+
+# 构建 folders JSON
+# 总是使用相对路径 "." 表示当前 workspace 目录
+FOLDERS=("{\"path\": \".\"}")
+
+# 添加 project 目录
 for code_root in "${CODE_ROOTS[@]}"; do
-    # 检查代码目录是否存在，不存在则创建
-    if [ ! -d "$code_root" ]; then
-        echo "  → 创建代码目录: $code_root"
-        mkdir -p "$code_root"
+    # 相对路径基于用户运行脚本时的工作目录解析，绝对路径直接使用
+    if [[ "$code_root" = /* ]]; then
+        CODE_ROOT_ABS="$code_root"
+    else
+        CODE_ROOT_ABS="$(cd "$code_root" 2>/dev/null && pwd)" || CODE_ROOT_ABS=""
     fi
-    # 使用 realpath 获取绝对路径
-    CODE_ROOT_ABS="$(cd "$code_root" 2>/dev/null && pwd)" || true
+    
+    # 如果目录不存在，基于用户指定的位置创建
+    if [ -z "$CODE_ROOT_ABS" ] || [ ! -d "$CODE_ROOT_ABS" ]; then
+        FULL_PATH="$code_root"
+        if [[ "$FULL_PATH" != /* ]]; then
+            # 相对路径，基于当前工作目录
+            FULL_PATH="$(pwd)/$code_root"
+        fi
+        echo "  → 创建代码目录: $FULL_PATH"
+        mkdir -p "$FULL_PATH"
+        CODE_ROOT_ABS="$(cd "$FULL_PATH" 2>/dev/null && pwd)" || true
+    fi
+    
     if [ -n "$CODE_ROOT_ABS" ]; then
-        CODE_ROOT_REL="$(realpath --relative-to="$SPACE_ROOT" "$CODE_ROOT_ABS" 2>/dev/null || echo "$code_root")"
-        FOLDERS+=("{\"path\": \"$CODE_ROOT_REL\"}")
+        # 使用绝对路径
+        FOLDERS+=("{\"path\": \"$CODE_ROOT_ABS\"}")
     fi
 done
-
-# 如果没有有效的 code_root，至少添加 workspace 自身
-if [ ${#FOLDERS[@]} -eq 0 ]; then
-    FOLDERS=("{\"path\": \".\"}")
-fi
 
 # 用 , 连接数组元素
 FOLDERS_JSON=$(IFS=,; echo "${FOLDERS[*]}")
 
-cat > "$SPACE_ROOT/.code-workspace" << EOF
+cat > "$SPACE_ROOT/${SPACE_NAME}.code-workspace" << EOF
 {
     "folders": [$FOLDERS_JSON],
     "settings": {}
@@ -221,8 +255,7 @@ else
 fi
 
 # 8. 创建 README
-cat > "$SPACE_ROOT/README.md" << EOF
-# $SPACE_NAME
+printf '# %s
 
 **AI 自主开发 workspace。**
 
@@ -257,7 +290,7 @@ cat > "$SPACE_ROOT/README.md" << EOF
 ## 项目知识
 
 .homunculus/insights/ - 记录项目经验
-EOF
+' "$SPACE_NAME" > "$SPACE_ROOT/README.md"
 
 # 9. 初始化 git（检查是否有文件）
 cd "$SPACE_ROOT"
@@ -286,5 +319,5 @@ echo "   ├── openspec/         # 规范设计"
 echo "   └── README.md"
 echo ""
 echo "📝 下一步:"
-echo "   1. 用 Cursor 打开: $SPACE_ROOT/.code-workspace"
+echo "   1. 双击打开: $SPACE_ROOT/${SPACE_NAME}.code-workspace"
 echo "   2. 说: /team 做一个 xxx"
