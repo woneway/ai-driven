@@ -60,8 +60,23 @@ project/              # 实际代码目录（由 .code-workspace 指定）
 ### 关键规则
 
 1. **代码写到 project 目录**，不是 workspace 根目录
-2. **spec.md 写到 openspec/specs/<feature>/spec.md**，不是代码目录
+2. **spec.md 写到 openspec/specs/**，格式为 `YYYY-MM-DD-HHMMSS_feature-name`
 3. 查看 project 路径：`cat .space-config` 或打开 `.code-workspace`
+
+### 规范命名格式
+
+```
+openspec/specs/2026-02-15-134230_calculator/spec.md
+        ↑ 年-月日-时分秒 ↑ 功能名
+```
+
+创建规范时使用当前时间戳：
+```bash
+# 获取当前时间戳
+TIMESTAMP=$(date +"%Y-%m-%d%H%M%S")
+# 创建目录
+mkdir -p openspec/specs/${TIMESTAMP}_<feature-name>
+```
 
 ## Agent 编排
 
