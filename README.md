@@ -6,6 +6,8 @@
 
 - [Cursor IDE](https://cursor.sh/)
 - Node.js 20+
+- [Everything Claude Code](https://github.com/affaan-m/everything-claude-code)（需手动 clone 或下载）
+- [OpenSpec CLI](https://github.com/Fission-AI/OpenSpec)（`setup-global.sh` 会自动安装）
 
 ## 快速开始
 

@@ -11,6 +11,8 @@ alwaysApply: true
 
 /team 是唯一的自主开发入口。详见 .cursor/commands/team.md。
 
+当用户直接提出开发需求（而非通过 /team），MUST 自动按 /team 流程执行，NOT 绕过流程直接写代码。
+
 /team 会根据需求类型和复杂度智能路由，调度全局 Sub-Agent 完成开发。
 
 ## 目录规则
@@ -24,8 +26,6 @@ alwaysApply: true
 - 所有变更 MUST 通过 OpenSpec 记录，确保 AI 有完整的项目变更历史
 - 完整模式（新功能、复杂任务）：opsx-new → opsx-ff → 实现 → opsx-verify → opsx-archive
 - 轻量模式（小改动、简单 bug）：opsx-new → 只写 proposal.md → 实现 → opsx-archive
-- 变更使用 Delta Spec 格式（ADDED / MODIFIED / REMOVED）
-- 需求强度使用 RFC 2119 关键字（MUST / SHALL / SHOULD / MAY）
 - OpenSpec 命令（/opsx-*）已安装在全局 ~/.cursor/commands/，所有 workspace 共享
 - openspec/ 目录是每个 workspace 的变更记录目录
 
@@ -35,20 +35,7 @@ alwaysApply: true
 
 MUST 实际调用 Task tool 函数（传入 subagent_type、description、prompt 参数），NOT 只是在回复中提到 Sub-Agent。
 
-可用 Sub-Agent（通过 Task tool 的 subagent_type 参数指定）：
-
-- tdd-guide: TDD 实现（新功能、Bug 修复）
-- code-reviewer: 代码审查（每次代码变更后 MUST 调用）
-- architect: 架构决策
-- planner: 需求分析、任务拆分
-- build-error-resolver: 构建失败（TS/通用）
-- go-build-resolver: 构建失败（Go）
-- go-reviewer / python-reviewer: 语言感知审查
-- database-reviewer: 数据库操作审查
-- security-reviewer: 安全审查
-- e2e-runner: 端到端测试
-- doc-updater: 文档更新
-- refactor-cleaner: 死代码清理
+根据任务类型选择合适的 subagent_type（如 tdd-guide、code-reviewer、architect 等），具体调度规则见 /team 命令。
 
 ## 技能管理
 

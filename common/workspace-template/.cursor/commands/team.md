@@ -20,7 +20,8 @@ description: AI 自主开发入口。接收需求后智能路由：判断类型�
 ### 步骤 0：环境准备
 
 0. 读取 .space-config 获取 SPACE_NAME 和 CODE_ROOTS_ABS
-1. 检查全局命令 /opsx-new 是否可用（即 ~/.cursor/commands/opsx-new.md 存在）。不可用则提示用户运行 setup-global.sh
+1. 如果 CODE_ROOTS_ABS 包含多个路径（逗号分隔），解析为列表备用
+2. 检查全局命令 /opsx-new 是否可用（即 ~/.cursor/commands/opsx-new.md 存在）。不可用则提示用户运行 setup-global.sh
 
 ### 步骤 1：需求分类
 
@@ -31,9 +32,11 @@ description: AI 自主开发入口。接收需求后智能路由：判断类型�
 | 新功能开发 | 新模块、新页面、新 API | 完整模式 |
 | 复杂 Bug | 跨模块、架构问题、根因不明 | 完整模式 |
 | 重构 | 跨模块、架构级调整 | 完整模式 |
-| 仅规划 | 用户明确只要方案不要实现 | 完整模式（只到规划） |
+| 仅规划 | 用户明确只要方案不要实现（"帮我规划..."、"给个方案..."、"分析一下怎么做..."、"不用实现"） | 完整模式（只到规划） |
 | 简单 Bug | 单文件、根因明确 | 轻量模式 |
 | 小改动 | 改样式、改文案、加按钮、改配置 | 轻量模式 |
+
+如果有多个 CODE_ROOTS，根据需求内容判断涉及哪些目录，后续 Sub-Agent prompt 的 Target Dir 只传入相关目录（而非全部）。
 
 ### 步骤 2：OpenSpec 记录
 
@@ -279,11 +282,15 @@ Task tool 调用:
 | E2E 测试 | e2e-runner | MUST: 有 E2E 配置时 |
 | 文档更新 | doc-updater | MUST: 完整模式归档前 |
 | 死代码清理 | refactor-cleaner | MUST: 重构前 |
+| 代码库探索 | explore | 需要快速了解代码结构时 |
+| 通用研究 | generalPurpose | 需要多步骤调查或复杂问题分析时 |
+
+以上为常用 Sub-Agent，不是完整列表。以 Cursor 平台实际支持的 subagent_type 为准，按任务需要选择最合适的类型。
 
 ## 错误恢复
 
 - 全局 opsx 命令不可用: 提示用户运行 setup-global.sh（在 ai-driven 根目录）
-- openspec/ 目录不存在: openspec init --tools cursor（只创建项目目录）
+- openspec/ 目录不存在: openspec init --tools none（只创建项目目录）
 - 构建失败: MUST 调用 Task tool (subagent_type: build-error-resolver)
 - Go 构建失败: MUST 调用 Task tool (subagent_type: go-build-resolver)
 - 测试失败: 修复后重跑，NOT 跳过

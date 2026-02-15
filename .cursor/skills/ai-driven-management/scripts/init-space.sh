@@ -130,16 +130,13 @@ fi
 
 # 只创建 openspec/ 项目目录（变更记录用），不在 workspace 内生成 commands/skills
 if command -v openspec &>/dev/null; then
-    # openspec init 会创建 openspec/ 目录结构
-    if (cd "$SPACE_ROOT" && openspec init --tools cursor 2>/dev/null); then
+    # --tools none: 只创建 openspec/ 目录结构，不生成 commands/skills
+    if (cd "$SPACE_ROOT" && openspec init --tools none 2>/dev/null); then
         echo "  OpenSpec 项目目录已创建"
     else
         echo "  警告: OpenSpec 初始化失败，手动创建目录"
         mkdir -p "$SPACE_ROOT/openspec/changes" "$SPACE_ROOT/openspec/specs"
     fi
-    # 清理 workspace 内的 opsx 命令和 skills（已在全局安装）
-    rm -f "$SPACE_ROOT/.cursor/commands"/opsx-*.md 2>/dev/null || true
-    rm -rf "$SPACE_ROOT/.cursor/skills"/openspec-* 2>/dev/null || true
 else
     echo "  openspec 未安装，手动创建目录"
     mkdir -p "$SPACE_ROOT/openspec/changes" "$SPACE_ROOT/openspec/specs"
