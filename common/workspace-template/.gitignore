@@ -1,10 +1,42 @@
-.DS_Store
+# AI-Driven Workspace GitIgnore
+
+# 依赖
+node_modules/
+.vendor/
+__pycache__/
+*.pyc
+.Python
+
+# 构建产物
+dist/
+build/
+*.o
+*.so
+*.dylib
+
+# IDE
+.idea/
+.vscode/
 *.swp
 *.swo
 *~
-node_modules/
-dist/
-build/
-.vscode/
-.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# 临时文件
 *.log
+tmp/
+temp/
+
+# 环境变量
+.env
+.env.local
+.env.*.local
+
+# OpenSpec (可以按需提交)
+# openspec/
+
+# AI 上下文（可选）
+# .context/

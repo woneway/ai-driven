@@ -26,10 +26,14 @@ globs: "*"
 用法: /ai-driven:analyze
 ```
 
-1. 读取所有 workspace 的 `.roles/feedback.md`
+1. 读取所有 workspace 的 `.homunculus/insights/lessons-learned.md`
 2. 汇总分析需要升级的能力
 3. 生成升级计划
 4. 等待用户确认后执行
+
+**错误处理**：
+- 如果 workspace 目录不存在，跳过并警告
+- 如果 insights 文件不存在，记录为空
 
 ### `/ai-driven:upgrade`
 
@@ -59,14 +63,40 @@ globs: "*"
 
 ---
 
+## /team
+
+**Lead Agent 编排多个子 Agent 完成任务**。
+
+```
+用法: /team <任务描述>
+```
+
+### 工作流
+
+1. 规划 → `/planner`
+2. 执行 → `/tdd-guide`
+3. 验证 → `/code-reviewer`
+
+### Agents
+
+```
+/planner  /tdd-guide  /code-reviewer  /security-reviewer
+```
+
+### 参考
+
+- [hamzafer/cursor-commands](https://github.com/hamzafer/cursor-commands)
+
+---
+
 ## 升级流程
 
 ```
 1. 用户: /ai-driven:analyze
 
 2. AI:
-   - 读取 config/workspaces.yaml 获取 workspace 列表
-   - 遍历每个 workspace，读取 .roles/feedback.md
+   - 读取 .space-config 获取 workspace 列表（CODE_ROOTS 字段）
+   - 遍历每个 workspace，读取 .homunculus/insights/lessons-learned.md
    - 汇总分析，生成升级建议
 
 3. AI 输出:
@@ -93,7 +123,7 @@ globs: "*"
 
 ## 自动反馈收集
 
-AI 在执行 `/dev` 命令时，会自动识别并记录：
+AI 在执行 `/team` 命令时，会自动识别并记录：
 
 ```markdown
 # 反馈给 AI-Driven
@@ -106,42 +136,71 @@ AI 在执行 `/dev` 命令时，会自动识别并记录：
 - [2026-02-14] 考虑添加数据库迁移相关的技能
 ```
 
+记录到 `.homunculus/insights/lessons-learned.md`
+
 ## 实施细节
 
 ### `/ai-driven:analyze` 实现
 
-```python
-# 1. 读取 workspace 列表
-workspaces = read_yaml("config/workspaces.yaml")
+```bash
+# 1. 读取当前目录的 .space-config 获取 workspace 信息
+source .space-config
 
-# 2. 遍历收集 feedback
-all_feedback = []
-for ws in workspaces:
-    feedback_path = f"{ws.path}/.roles/feedback.md"
-    if exists(feedback_path):
-        all_feedback += read(feedback_path)
+# 2. 遍历收集 lessons-learned
+all_lessons=()
+for code_root in $CODE_ROOTS; do
+    lessons_file="$code_root/.homunculus/insights/lessons-learned.md"
+    if [ -f "$lessons_file" ]; then
+        all_lessons+=("$lessons_file")
+    fi
+done
 
 # 3. 分析和汇总
-analysis = analyze_feedback(all_feedback)
+analysis=$(analyze_lessons "${all_lessons[@]}")
 
 # 4. 生成建议
-return format_analysis(analysis)
+echo "$analysis"
 ```
+
+**错误处理**：
+- CODE_ROOTS 未定义：提示用户先初始化 workspace
+- .homunculus 目录不存在：跳过该 workspace
+- lessons-learned.md 为空：跳过并记录为"无反馈"
 
 ### `/ai-driven:upgrade` 实现
 
-```python
+```bash
 # 1. 读取升级计划（由 analyze 生成）
-plan = read("config/upgrade-plan.md")
+PLAN_FILE="config/upgrade-plan.md"
+if [ ! -f "$PLAN_FILE" ]; then
+    echo "错误: 未找到升级计划，请先运行 /ai-driven:analyze"
+    exit 1
+fi
 
-# 2. 执行计划
-for item in plan.items:
-    if item.type == "skill":
-        create_skill(item.name, item.content)
-    elif item.type == "rule":
-        update_rule(item.name, item.content)
-
-# 3. 同步到 workspace
-for ws in plan.affected_workspaces:
-    sync_to_workspace(ws)
+# 2. 解析计划（简单按行解析）
+# 格式: ACTION|TYPE|NAME|TARGET
+while IFS='|' read -r action type name target; do
+    [ "$action" = "#" ] && continue  # 跳过注释
+    
+    case "$action" in
+        CREATE_SKILL)
+            # 创建新技能
+            mkdir -p "$HOME/.cursor/skills/$name"
+            # ... 复制模板
+            ;;
+        UPDATE_RULE)
+            # 更新规则
+            # ...
+            ;;
+        SYNC)
+            # 同步到 workspace
+            # ...
+            ;;
+    esac
+done < "$PLAN_FILE"
 ```
+
+**错误处理**：
+- PLAN_FILE 不存在：报错并提示运行 analyze
+- 权限不足：提示用户检查权限
+- 目标文件已存在：备份后再覆盖
