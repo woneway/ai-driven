@@ -193,6 +193,43 @@ if ! $SKIP_SYMLINK; then
 fi
 
 # =============================================================================
+# 0.6 配置 hooks.json (使用 symlink)
+# =============================================================================
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+echo "  0.6 Hooks 配置"
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+
+hooks_json_src="$GLOBAL_CURSOR_DIR/hooks/hooks.json"
+hooks_json_dst="$CURSOR_HOME/hooks.json"
+
+if [ -f "$hooks_json_src" ]; then
+    # 如果已存在的是文件而不是 symlink，先删除
+    if [ -f "$hooks_json_dst" ] && [ ! -L "$hooks_json_dst" ]; then
+        if ! $DRY_RUN; then
+            rm "$hooks_json_dst"
+            info "删除旧的 hooks.json 文件"
+        else
+            echo "  [DRY-RUN] rm $hooks_json_dst"
+        fi
+    fi
+    
+    # 创建 symlink
+    if [ ! -L "$hooks_json_dst" ]; then
+        if ! $DRY_RUN; then
+            ln -s "$hooks_json_src" "$hooks_json_dst"
+            ok "hooks.json 已创建 (symlink)"
+        else
+            echo "  [DRY-RUN] ln -s $hooks_json_src $hooks_json_dst"
+        fi
+    else
+        ok "hooks.json symlink 已存在"
+    fi
+else
+    warn "hooks.json 源文件不存在: $hooks_json_src"
+fi
+echo ""
+
+# =============================================================================
 # 1. OpenSpec - 全局安装 commands 和 skills
 # =============================================================================
 if $INSTALL_OPENSPEC; then

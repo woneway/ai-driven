@@ -24,7 +24,7 @@ command=$(echo "$input" | jq -r '.command // ""')
 cwd=$(echo "$input" | jq -r '.cwd // "."')
 
 # 记录日志
-LOG_DIR="${HOME}/.cursor/logs"
+LOG_DIR="${HOME}/.cursor/logs/hooks"
 mkdir -p "$LOG_DIR"
 
 timestamp=$(date '+%Y-%m-%d %H:%M:%S')

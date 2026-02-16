@@ -31,7 +31,7 @@ workspace=$(echo "$input" | jq -r '.workspace_roots[0] // .workspacePath // .cwd
 workspace_name=$(basename "$workspace" 2>/dev/null || echo "$workspace")
 
 # 记录日志
-LOG_DIR="${HOME}/.cursor/logs"
+LOG_DIR="${HOME}/.cursor/logs/hooks"
 mkdir -p "$LOG_DIR"
 
 timestamp=$(date '+%Y-%m-%d %H:%M:%S')

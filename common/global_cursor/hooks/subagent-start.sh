@@ -20,18 +20,18 @@ fi
 # 读取 stdin 输入（session 数据）
 read -r input
 
-# 提取关键信息
-session_id=$(echo "$input" | jq -r '.sessionId // "unknown"')
-subagent_type=$(echo "$input" | jq -r '.subagentType // .type // "unknown"')
-description=$(echo "$input" | jq -r '.description // .task // "unknown"')
+# 提取关键信息 - 尝试多种字段名
+session_id=$(echo "$input" | jq -r '.session_id // .sessionId // .id // "unknown"')
+subagent_type=$(echo "$input" | jq -r '.subagentType // .type // .subagent_type // "unknown"')
+description=$(echo "$input" | jq -r '.description // .task // .instruction // "unknown"')
 prompt=$(echo "$input" | jq -r '.prompt // .instruction // ""')
 
-# 获取工作目录
-workspace=$(echo "$input" | jq -r '.workspacePath // .workspace // .cwd // "unknown"')
+# 获取工作目录 - 尝试多种字段名
+workspace=$(echo "$input" | jq -r '.workspace_roots[0] // .workspacePath // .workspace // .cwd // "unknown"')
 workspace_name=$(basename "$workspace" 2>/dev/null || echo "$workspace")
 
 # 记录日志
-LOG_DIR="${HOME}/.cursor/logs"
+LOG_DIR="${HOME}/.cursor/logs/hooks"
 mkdir -p "$LOG_DIR"
 
 timestamp=$(date '+%Y-%m-%d %H:%M:%S')
@@ -42,6 +42,7 @@ echo "  Session: $session_id" >> "$log_file"
 echo "  Type: $subagent_type" >> "$log_file"
 echo "  Description: $description" >> "$log_file"
 echo "  Workspace: $workspace_name" >> "$log_file"
+echo "  Config: $CONFIG_SOURCE" >> "$log_file"
 echo "---" >> "$log_file"
 
 # 发送通知

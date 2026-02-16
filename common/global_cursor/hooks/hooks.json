@@ -11,6 +11,26 @@
         "command": "hooks/session-end.sh"
       }
     ],
+    "stop": [
+      {
+        "command": "hooks/session-end.sh"
+      }
+    ],
+    "preToolUse": [
+      {
+        "command": "hooks/preToolUse.sh"
+      }
+    ],
+    "postToolUse": [
+      {
+        "command": "hooks/audit-tool.sh"
+      }
+    ],
+    "postToolUseFailure": [
+      {
+        "command": "hooks/postToolUseFailure.sh"
+      }
+    ],
     "subagentStart": [
       {
         "command": "hooks/subagent-start.sh"
@@ -32,9 +52,44 @@
         "command": "hooks/audit-shell-log.sh"
       }
     ],
-    "postToolUse": [
+    "beforeMCPExecution": [
       {
-        "command": "hooks/audit-tool.sh"
+        "command": "hooks/beforeMCPExecution.sh"
+      }
+    ],
+    "afterMCPExecution": [
+      {
+        "command": "hooks/afterMCPExecution.sh"
+      }
+    ],
+    "beforeReadFile": [
+      {
+        "command": "hooks/beforeReadFile.sh"
+      }
+    ],
+    "afterFileEdit": [
+      {
+        "command": "hooks/afterFileEdit.sh"
+      }
+    ],
+    "beforeSubmitPrompt": [
+      {
+        "command": "hooks/beforeSubmitPrompt.sh"
+      }
+    ],
+    "preCompact": [
+      {
+        "command": "hooks/preCompact.sh"
+      }
+    ],
+    "afterAgentResponse": [
+      {
+        "command": "hooks/afterAgentResponse.sh"
+      }
+    ],
+    "afterAgentThought": [
+      {
+        "command": "hooks/afterAgentThought.sh"
       }
     ]
   }

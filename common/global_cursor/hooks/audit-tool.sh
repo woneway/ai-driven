@@ -25,7 +25,7 @@ tool_input=$(echo "$input" | jq -r '.tool_input // "{}"')
 duration=$(echo "$input" | jq -r '.duration // "0"')
 
 # 记录日志
-LOG_DIR="${HOME}/.cursor/logs"
+LOG_DIR="${HOME}/.cursor/logs/hooks"
 mkdir -p "$LOG_DIR"
 
 timestamp=$(date '+%Y-%m-%d %H:%M:%S')

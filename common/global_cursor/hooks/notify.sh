@@ -18,15 +18,22 @@ ok()    { echo -e "${GREEN}[OK]${NC} $*"; }
 warn()  { echo -e "${YELLOW}[WARN]${NC} $*"; }
 error() { echo -e "${RED}[ERROR]${NC} $*"; }
 
-NOTIFY_SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# 获取脚本真实路径（支持 symlink）
+_SCRIPT_PATH="$(readlink -f "${BASH_SOURCE[0]:-$0}" 2>/dev/null || echo "${BASH_SOURCE[0]:-$0}")"
+NOTIFY_SCRIPT_DIR="$(dirname "$_SCRIPT_PATH")"
+
 # AI_DRIVEN_ROOT: 从脚本位置推导 -> common/global_cursor/hooks/ -> common/global_cursor/ -> common/ -> ai-driven
 AI_DRIVEN_ROOT="$(cd "$NOTIFY_SCRIPT_DIR/../../../" && pwd)"
-ENV_FILE="$AI_DRIVEN_ROOT/.env"
+ENV_FILE="$AI_DRIVEN_ROOT/.workspace.env"
 
-# 加载配置（从 .env 和 .workspace.env 文件）
+# 加载配置（从 .workspace.env 文件）
+# 实现字段级别覆盖：只有 workspace 明确设置的变量才覆盖全局
 load_config() {
-    # 优先加载 workspace 级别配置，然后加载全局配置
-    # workspace 配置会覆盖全局配置
+    # 日志目录
+    local log_dir="${HOME}/.cursor/logs/hooks"
+    mkdir -p "$log_dir"
+    local config_log="$log_dir/config-load.log"
+    local timestamp=$(date '+%Y-%m-%d %H:%M:%S')
     
     # 1. 先加载全局配置（ai-driven 根目录）
     if [ -f "$ENV_FILE" ]; then
@@ -37,16 +44,58 @@ load_config() {
         # 映射变量名
         ENABLED_CHANNELS="${NOTIFY_ENABLED_CHANNELS:-dingtalk}"
         NOTIFY_MIN_DURATION="${NOTIFY_MIN_DURATION:-0}"
+        
+        echo "[$timestamp] 全局配置加载: $ENV_FILE" >> "$config_log"
     else
         warn "未找到配置文件: $ENV_FILE"
+        echo "[$timestamp] 警告: 未找到全局配置 $ENV_FILE" >> "$config_log"
     fi
     
-    # 2. 如果存在 workspace 配置，加载并覆盖
-    # 从 CURSOR_PROJECT_DIR 或环境变量获取 workspace 路径
+    # 记录全局配置值（用于比较）
+    local global_hook_enabled="$HOOK_ENABLED"
+    local global_notify_channels="$NOTIFY_ENABLED_CHANNELS"
+    local global_notify_duration="$NOTIFY_MIN_DURATION"
+    
+    # 2. 如果存在 workspace 配置，只读取明确设置的变量（未注释的行）进行覆盖
+    local workspace_config_loaded=false
     if [ -n "$CURSOR_PROJECT_DIR" ] && [ -f "$CURSOR_PROJECT_DIR/.workspace.env" ]; then
-        set -a
-        source "$CURSOR_PROJECT_DIR/.workspace.env"
-        set +a
+        # 解析 workspace 配置，只读取有效行（非注释、非空行）
+        while IFS= read -r line; do
+            # 跳过注释行和空行
+            [[ "$line" =~ ^[[:space:]]*# ]] && continue
+            [[ "$line" =~ ^[[:space:]]*$ ]] && continue
+            
+            # 提取变量名和值
+            if [[ "$line" =~ ^[[:space:]]*([A-Za-z_][A-Za-z0-9_]*)=(.+)$ ]]; then
+                local var_name="${BASH_REMATCH[1]}"
+                local var_value="${BASH_REMATCH[2]}"
+                
+                # 移除可能的引号
+                var_value="${var_value//\"/}"
+                var_value="${var_value//\'/}"
+                
+                # 设置变量（覆盖全局）
+                eval "$var_name=\"$var_value\""
+                
+                echo "[$timestamp] Workspace 覆盖: $var_name=$var_value" >> "$config_log"
+            fi
+        done < "$CURSOR_PROJECT_DIR/.workspace.env"
+        
+        workspace_config_loaded=true
+    fi
+    
+    # 3. 记录最终配置状态
+    echo "[$timestamp] ===== 最终配置 =====" >> "$config_log"
+    echo "[$timestamp] HOOK_ENABLED: ${HOOK_ENABLED:-true} (全局: ${global_hook_enabled:-未设置})" >> "$config_log"
+    echo "[$timestamp] NOTIFY_ENABLED_CHANNELS: ${NOTIFY_ENABLED_CHANNELS:-dingtalk} (全局: ${global_notify_channels:-未设置})" >> "$config_log"
+    echo "[$timestamp] NOTIFY_MIN_DURATION: ${NOTIFY_MIN_DURATION:-0} (全局: ${global_notify_duration:-未设置})" >> "$config_log"
+    echo "[$timestamp] ====================" >> "$config_log"
+    
+    # 导出配置来源
+    if [ "$workspace_config_loaded" = true ]; then
+        export CONFIG_SOURCE="全局 -> Workspace 覆盖: $CURSOR_PROJECT_DIR/.workspace.env"
+    else
+        export CONFIG_SOURCE="全局: $ENV_FILE"
     fi
 }
 
