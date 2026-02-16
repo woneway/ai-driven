@@ -2,7 +2,7 @@
 # =============================================================================
 # audit-tool.sh - Post Tool Use Hook
 #
-# 在工具执行后记录信息
+# 只记录关键工具调用（写入操作），写入分类日志
 # =============================================================================
 
 # 加载配置
@@ -26,53 +26,77 @@ duration=$(echo "$input" | jq -r '.duration // "0"')
 status=$(echo "$input" | jq -r '.status // .success // "success"')
 error=$(echo "$input" | jq -r '.error // .failure // ""')
 
-# 提取更多调试信息
-session_id=$(echo "$input" | jq -r '.session_id // .sessionId // "unknown"')
-result=$(echo "$input" | jq -r '.result // .output // ""')
+# 提取工作空间
+workspace=$(echo "$input" | jq -r '.workspace_roots[0] // .workspacePath // .workspace // .cwd // ""')
+workspace_name=$(basename "$workspace" 2>/dev/null || echo "unknown")
 
-# 记录日志
-LOG_DIR="${HOME}/.cursor/logs/hooks"
-mkdir -p "$LOG_DIR"
-
-# 使用高精度时间戳
-timestamp=$(date '+%Y-%m-%d %H:%M:%S.%3N')
-log_file="$LOG_DIR/tool-use.log"
-
-echo "[$timestamp] ===== Tool 使用 =====" >> "$log_file"
-echo "  Session ID: $session_id" >> "$log_file"
-echo "  Tool: $tool_name" >> "$log_file"
-echo "  Duration: ${duration}ms" >> "$log_file"
-echo "  Status: $status" >> "$log_file"
-echo "  PID: $$" >> "$log_file"
-echo "  Config Source: $CONFIG_SOURCE" >> "$log_file"
-
-# 记录错误信息（如果有）
-if [ -n "$error" ] && [ "$error" != "null" ]; then
-    echo "  Error: $error" >> "$log_file"
+# 判断工具类型
+if is_readonly_tool "$tool_name"; then
+    # 只读工具不记录详细日志
+    echo '{}'
+    exit 0
 fi
 
-# 记录工具输入（截断过长的）
-if [ -n "$tool_input" ] && [ "$tool_input" != "{}" ]; then
-    tool_input_truncated=$(echo "$tool_input" | head -c 500)
-    if [ ${#tool_input} -gt 500 ]; then
-        tool_input_truncated="$tool_input_truncated...[truncated]"
-    fi
-    echo "  Tool Input: $tool_input_truncated" >> "$log_file"
+# 判断是否为关键工具
+if ! is_critical_tool "$tool_name"; then
+    # 非关键工具也不记录
+    echo '{}'
+    exit 0
 fi
 
-# 记录工具输出/结果（截断过长的）
-if [ -n "$result" ]; then
-    result_truncated=$(echo "$result" | head -c 500)
-    if [ ${#result} -gt 500 ]; then
-        result_truncated="$result_truncated...[truncated]"
-    fi
-    echo "  Tool Result: $result_truncated" >> "$log_file"
+# 格式化耗时
+if [ "$duration" -lt 1000 ]; then
+    duration_str="${duration}ms"
+elif [ "$duration" -lt 60000 ]; then
+    duration_str="$((duration / 1000))秒$((duration % 1000))ms"
+else
+    duration_str="$((duration / 60000))分$(((duration % 60000) / 1000))秒"
 fi
 
-# 记录完整输入 JSON (用于调试)
-echo "  Input JSON: $(echo "$input" | jq -c '.')" >> "$log_file"
+# 构建简洁的日志内容
+case "$tool_name" in
+    Write)
+        path=$(echo "$tool_input" | jq -r '.path // "unknown"')
+        log_message="Write: $(basename "$path")"
+        ;;
+    Edit)
+        path=$(echo "$tool_input" | jq -r '.path // "unknown"')
+        log_message="Edit: $(basename "$path")"
+        ;;
+    Delete)
+        path=$(echo "$tool_input" | jq -r '.path // "unknown"')
+        log_message="Delete: $(basename "$path")"
+        ;;
+    Shell|Bash)
+        command=$(echo "$tool_input" | jq -r '.command // "unknown"')
+        # 截断过长的命令
+        if [ ${#command} -gt 100 ]; then
+            command="${command:0:100}..."
+        fi
+        log_message="Shell: $command"
+        ;;
+    GenerateImage)
+        log_message="GenerateImage"
+        ;;
+    *)
+        log_message="$tool_name"
+        ;;
+esac
 
-echo "=============================" >> "$log_file"
+# 记录到日志文件
+if [ "$status" = "success" ] || [ "$status" = "completed" ]; then
+    log_write "tool" "success" "$workspace_name | $log_message | $duration_str"
+else
+    log_write "tool" "error" "$workspace_name | $log_message | 失败: ${error:0:100}"
+    
+    # 错误时发送通知
+    notify "工具执行失败" "**工作空间**: $workspace_name
+
+**工具**: $tool_name
+**操作**: $log_message
+**耗时**: $duration_str
+**错误**: ${error:0:200}" "error" "0"
+fi
 
 # 输出空 JSON
 echo '{}'

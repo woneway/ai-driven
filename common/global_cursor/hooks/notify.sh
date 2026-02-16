@@ -24,6 +24,31 @@ ok()    { echo -e "${GREEN}[OK]${NC} $*"; }
 warn()  { echo -e "${YELLOW}[WARN]${NC} $*"; }
 error() { echo -e "${RED}[ERROR]${NC} $*"; }
 
+# 写日志函数 - 分类记录
+# 用法: log_write "session" "info" "内容"
+log_write() {
+    local log_type="$1"   # session/tool/shell
+    local level="$2"      # info/success/error
+    local message="$3"
+
+    LOG_DIR="${HOME}/.cursor/logs/hooks"
+    mkdir -p "$LOG_DIR"
+
+    local timestamp=$(date '+%Y-%m-%d %H:%M:%S')
+    local log_file="$LOG_DIR/${log_type}.log"
+
+    # 根据级别添加前缀
+    local prefix=""
+    case "$level" in
+        success) prefix="[✓]" ;;
+        error)   prefix="[✗]" ;;
+        warn)    prefix="[!]" ;;
+        *)       prefix="[·]" ;;
+    esac
+
+    echo "[$timestamp] $prefix $message" >> "$log_file"
+}
+
 # 获取脚本真实路径（支持 symlink）
 _SCRIPT_PATH="$(readlink -f "${BASH_SOURCE[0]:-$0}" 2>/dev/null || echo "${BASH_SOURCE[0]:-$0}")"
 NOTIFY_SCRIPT_DIR="$(dirname "$_SCRIPT_PATH")"
@@ -128,6 +153,34 @@ hook_enabled() {
     return 0
 }
 
+# 判断是否为关键工具（需要记录日志和通知）
+# 用法: is_critical_tool "Write" → 返回 0 如果是关键工具
+is_critical_tool() {
+    local tool_name="$1"
+    # 关键工具列表：写入操作、危险操作
+    case "$tool_name" in
+        Write|Edit|Delete|Shell|Bash|str_replace|Insert|Notebook|EditNotebook|GenerateImage)
+            return 0
+            ;;
+        *)
+            return 1
+            ;;
+    esac
+}
+
+# 判断是否为只读工具（不需要详细记录）
+is_readonly_tool() {
+    local tool_name="$1"
+    case "$tool_name" in
+        Read|Glob|Grep|SemanticSearch|Ask|Task|WebSearch|WebFetch|FetchMcpResource|ListMcpResources)
+            return 0
+            ;;
+        *)
+            return 1
+            ;;
+    esac
+}
+
 # 发送微信通知
 notify_wechat() {
     local title="$1"
@@ -163,9 +216,9 @@ EOF
         -d "$payload" > /dev/null 2>&1
 
     if [ $? -eq 0 ]; then
-        echo -e "${GREEN}[微信通知发送成功]${NC}"
+        echo -e "${GREEN}[微信✓]${NC}"
     else
-        echo -e "${RED}[微信通知发送失败]${NC}"
+        echo -e "${RED}[微信✗]${NC}"
     fi
 }
 
@@ -204,13 +257,13 @@ notify_dingtalk() {
     # 关键词验证：如果设置了关键词，必须在消息开头包含
     local keyword="${DINGTALK_KEYWORD:-cursor}"
 
-    # 构建更丰富的消息格式
+    # 构建精简的消息格式 - 只保留关键信息
     local payload=$(cat <<EOF
 {
     "msgtype": "markdown",
     "markdown": {
         "title": "$emoji $keyword $title",
-        "text": "## $emoji $keyword $title\n\n$content\n\n---\n> 由 ai-driven 框架发送 | $(date '+%H:%M:%S')"
+        "text": "## $emoji $title\n\n$content\n\n---\n> ai-driven | $(date '+%H:%M:%S')"
     }
 }
 EOF
@@ -222,9 +275,9 @@ EOF
 
     # 检查返回结果
     if echo "$response" | grep -q '"errcode":0'; then
-        echo -e "${GREEN}[钉钉通知发送成功]${NC}"
+        echo -e "${GREEN}[钉钉✓]${NC}"
     else
-        echo -e "${RED}[钉钉通知发送失败]${NC} - $response"
+        echo -e "${RED}[钉钉✗]${NC} - $response"
     fi
 }
 
@@ -272,19 +325,19 @@ notify() {
     # 根据配置启用渠道
     local channels="${ENABLED_CHANNELS:-dingtalk}"
 
-    # 构建简洁的内容（不重复添加耗时和状态，因为内容已经包含）
-    local notify_content="$content"
+    # 简短输出到终端
+    info "发送通知: $title"
 
     if echo "$channels" | grep -q "wechat"; then
-        notify_wechat "$title" "$notify_content" "$status"
+        notify_wechat "$title" "$content" "$status"
     fi
 
     if echo "$channels" | grep -q "dingtalk"; then
-        notify_dingtalk "$title" "$notify_content" "$status"
+        notify_dingtalk "$title" "$content" "$status"
     fi
 
     if echo "$channels" | grep -q "sms"; then
-        notify_sms "$title" "$notify_content"
+        notify_sms "$title" "$content"
     fi
 }
 
@@ -309,3 +362,6 @@ export -f notify_sms
 export -f quick_notify
 export -f load_config
 export -f hook_enabled
+export -f is_critical_tool
+export -f is_readonly_tool
+export -f log_write

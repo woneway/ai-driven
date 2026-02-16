@@ -2,7 +2,7 @@
 # =============================================================================
 # audit-shell-log.sh - After Shell Execution Hook
 #
-# 在 shell 命令执行后记录输出
+# 只记录关键 shell 命令的输出
 # =============================================================================
 
 # 加载配置
@@ -24,39 +24,62 @@ command=$(echo "$input" | jq -r '.command // ""')
 output=$(echo "$input" | jq -r '.output // ""')
 duration=$(echo "$input" | jq -r '.duration // "0"')
 exit_code=$(echo "$input" | jq -r '.exit_code // .exitCode // .code // "-1"')
-session_id=$(echo "$input" | jq -r '.session_id // .sessionId // "unknown"')
 
-# 截断输出（默认2000字符，比之前500更合理）
-max_output_length=2000
-if [ ${#output} -gt $max_output_length ]; then
-    output="${output:0:$max_output_length}...[truncated, original length: ${#output}]"
+# workspace 信息
+workspace=$(echo "$input" | jq -r '.workspace_roots[0] // .workspacePath // .workspace // .cwd // "unknown"')
+workspace_name=$(basename "$workspace" 2>/dev/null || echo "$workspace")
+
+# 判断是否为关键命令
+is_critical_command() {
+    local cmd="$1"
+    case "$cmd" in
+        git*|npm*|yarn|pnpm|docker*|make|cmake|gradle|.*py|*pip*|*node*|.*sh|curl|wget)
+            return 0
+            ;;
+        *)
+            # 检查是否包含危险操作
+            echo "$cmd" | grep -qE 'rm -rf|del -rf|sudo|chmod|chown' && return 0
+            return 1
+            ;;
+    esac
+}
+
+# 只记录关键命令
+if ! is_critical_command "$command"; then
+    echo '{}'
+    exit 0
 fi
 
-# 记录日志
-LOG_DIR="${HOME}/.cursor/logs/hooks"
-mkdir -p "$LOG_DIR"
+# 格式化耗时
+if [ "$duration" -lt 1000 ]; then
+    duration_str="${duration}ms"
+elif [ "$duration" -lt 60000 ]; then
+    duration_str="$((duration / 1000))秒"
+else
+    duration_str="$((duration / 60000))分$(((duration % 60000) / 1000))秒"
+fi
 
-# 使用高精度时间戳
-timestamp=$(date '+%Y-%m-%d %H:%M:%S.%3N')
-log_file="$LOG_DIR/shell-output.log"
+# 截断命令显示
+cmd_display="$command"
+[ ${#cmd_display} -gt 60 ] && cmd_display="${cmd_display:0:60}..."
 
-echo "[$timestamp] ===== Shell 完成 =====" >> "$log_file"
-echo "  Session ID: $session_id" >> "$log_file"
-echo "  Command: $command" >> "$log_file"
-echo "  Duration: ${duration}ms" >> "$log_file"
-echo "  Exit Code: $exit_code" >> "$log_file"
-echo "  PID: $$" >> "$log_file"
-echo "  Config Source: $CONFIG_SOURCE" >> "$log_file"
+# 记录日志 - 使用新的 log_write 函数
+if [ "$exit_code" = "0" ]; then
+    log_write "shell" "success" "$workspace_name | $cmd_display | $duration_str | ✓"
+else
+    # 失败时记录错误输出
+    error_preview=$(echo "$output" | head -c 100 | tr '\n' ' ')
+    log_write "shell" "error" "$workspace_name | $cmd_display | $duration_str | ✗ $error_preview"
+    
+    # 失败时发送通知
+    notify "Shell命令失败" "**工作空间**: $workspace_name
 
-# 记录输出
-echo "  Output Length: ${#output} chars" >> "$log_file"
-echo "  Output:" >> "$log_file"
-echo "$output" | sed 's/^/    /' >> "$log_file"
+**命令**: \`$cmd_display\`
+**耗时**: $duration_str
+**退出码**: $exit_code
 
-# 记录完整输入 JSON (用于调试)
-echo "  Input JSON: $(echo "$input" | jq -c '.')" >> "$log_file"
-
-echo "=============================" >> "$log_file"
+**错误输出**: ${output:0:200}" "error" "0"
+fi
 
 # 输出空 JSON
 echo '{}'
