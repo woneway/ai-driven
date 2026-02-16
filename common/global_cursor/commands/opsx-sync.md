@@ -1,9 +1,5 @@
----
-name: /opsx-sync
-id: opsx-sync
-category: Workflow
-description: Sync delta specs from a change to main specs
----
+# opsx-sync
+
 
 Sync delta specs from a change to main specs.
 

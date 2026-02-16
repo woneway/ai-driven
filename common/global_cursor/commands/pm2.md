@@ -110,7 +110,7 @@ proc.on('close', (code) => process.exit(code));
 ````markdown
 Start all services and open PM2 monitor.
 ```bash
-cd "{PROJECT_ROOT}" && pm2 start ecosystem.config.cjs && start wt.exe -d "{PROJECT_ROOT}" pwsh -NoExit -c "pm2 monit"
+cd "{PROJECT_PATH}" && pm2 start ecosystem.config.cjs && start wt.exe -d "{PROJECT_PATH}" pwsh -NoExit -c "pm2 monit"
 ```
 ````
 
@@ -118,7 +118,7 @@ cd "{PROJECT_ROOT}" && pm2 start ecosystem.config.cjs && start wt.exe -d "{PROJE
 ````markdown
 Stop all services.
 ```bash
-cd "{PROJECT_ROOT}" && pm2 stop all
+cd "{PROJECT_PATH}" && pm2 stop all
 ```
 ````
 
@@ -126,7 +126,7 @@ cd "{PROJECT_ROOT}" && pm2 stop all
 ````markdown
 Restart all services.
 ```bash
-cd "{PROJECT_ROOT}" && pm2 restart all
+cd "{PROJECT_PATH}" && pm2 restart all
 ```
 ````
 
@@ -134,7 +134,7 @@ cd "{PROJECT_ROOT}" && pm2 restart all
 ````markdown
 Start {name} ({port}) and open logs.
 ```bash
-cd "{PROJECT_ROOT}" && pm2 start ecosystem.config.cjs --only {name} && start wt.exe -d "{PROJECT_ROOT}" pwsh -NoExit -c "pm2 logs {name}"
+cd "{PROJECT_PATH}" && pm2 start ecosystem.config.cjs --only {name} && start wt.exe -d "{PROJECT_PATH}" pwsh -NoExit -c "pm2 logs {name}"
 ```
 ````
 
@@ -142,7 +142,7 @@ cd "{PROJECT_ROOT}" && pm2 start ecosystem.config.cjs --only {name} && start wt.
 ````markdown
 Stop {name} ({port}).
 ```bash
-cd "{PROJECT_ROOT}" && pm2 stop {name}
+cd "{PROJECT_PATH}" && pm2 stop {name}
 ```
 ````
 
@@ -150,7 +150,7 @@ cd "{PROJECT_ROOT}" && pm2 stop {name}
 ````markdown
 Restart {name} ({port}).
 ```bash
-cd "{PROJECT_ROOT}" && pm2 restart {name}
+cd "{PROJECT_PATH}" && pm2 restart {name}
 ```
 ````
 
@@ -158,7 +158,7 @@ cd "{PROJECT_ROOT}" && pm2 restart {name}
 ````markdown
 View all PM2 logs.
 ```bash
-cd "{PROJECT_ROOT}" && pm2 logs
+cd "{PROJECT_PATH}" && pm2 logs
 ```
 ````
 
@@ -166,19 +166,19 @@ cd "{PROJECT_ROOT}" && pm2 logs
 ````markdown
 View PM2 status.
 ```bash
-cd "{PROJECT_ROOT}" && pm2 status
+cd "{PROJECT_PATH}" && pm2 status
 ```
 ````
 
 ### PowerShell Scripts (pm2-logs-{port}.ps1)
 ```powershell
-Set-Location "{PROJECT_ROOT}"
+Set-Location "{PROJECT_PATH}"
 pm2 logs {name}
 ```
 
 ### PowerShell Scripts (pm2-monit.ps1)
 ```powershell
-Set-Location "{PROJECT_ROOT}"
+Set-Location "{PROJECT_PATH}"
 pm2 monit
 ```
 

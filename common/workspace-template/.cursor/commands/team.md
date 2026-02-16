@@ -19,8 +19,8 @@ description: AI 自主开发入口。接收需求后智能路由：判断类型�
 
 ### 步骤 0：环境准备
 
-0. 读取 .space-config 获取 SPACE_NAME 和 CODE_ROOTS_ABS
-1. 如果 CODE_ROOTS_ABS 包含多个路径（逗号分隔），解析为列表备用
+0. 读取 .env 获取 SPACE_NAME 和 PROJECT_PATH
+1. 如果 PROJECT_PATH 包含多个路径（逗号分隔），解析为列表备用
 2. 检查全局命令 /opsx-new 是否可用（即 ~/.cursor/commands/opsx-new.md 存在）。不可用则提示用户运行 setup-global.sh
 
 ### 步骤 1：需求分类
@@ -36,7 +36,7 @@ description: AI 自主开发入口。接收需求后智能路由：判断类型�
 | 简单 Bug | 单文件、根因明确 | 轻量模式 |
 | 小改动 | 改样式、改文案、加按钮、改配置 | 轻量模式 |
 
-如果有多个 CODE_ROOTS，根据需求内容判断涉及哪些目录，后续 Sub-Agent prompt 的 Target Dir 只传入相关目录（而非全部）。
+如果有多个项目，根据需求内容判断涉及哪些目录，后续 Sub-Agent prompt 的 Target Dir 只传入相关目录（而非全部）。
 
 ### 步骤 2：OpenSpec 记录
 
@@ -54,7 +54,7 @@ Task tool 调用:
   prompt: |
     HANDOFF: /team -> architect
     Context: <需求摘要>
-    Target Dir: <CODE_ROOTS_ABS>
+    Target Dir: <PROJECT_PATH>
     Task: 评估架构方案，输出决策记录
 ```
 
@@ -67,7 +67,7 @@ Task tool 调用:
   prompt: |
     HANDOFF: /team -> planner
     Context: <需求摘要>
-    Target Dir: <CODE_ROOTS_ABS>
+    Target Dir: <PROJECT_PATH>
     Task: 制定实施计划，输出任务拆分
 ```
 
@@ -100,7 +100,7 @@ Task tool 调用:
     Context: <proposal.md 内容>
     Design: <design.md 全文>
     Tasks: <tasks.md 全文>
-    Target Dir: <CODE_ROOTS_ABS>
+    Target Dir: <PROJECT_PATH>
     Files: <需要修改的文件列表>
 ```
 
@@ -161,7 +161,7 @@ Task tool 调用:
 
 #### 简单 Bug
 
-1. 在 CODE_ROOTS_ABS 中定位问题代码
+1. 在 PROJECT_PATH 中定位问题代码
 2. MUST 调用 Task tool 修复（TDD 方式）：
 
 ```
@@ -171,7 +171,7 @@ Task tool 调用:
   prompt: |
     HANDOFF: /team -> tdd-guide
     Context: <bug 描述>
-    Target Dir: <CODE_ROOTS_ABS>
+    Target Dir: <PROJECT_PATH>
     Task: 先写失败测试复现 bug，再修复使测试通过，最后运行全部测试确保无回归
     Files: <相关文件>
 ```
@@ -190,7 +190,7 @@ Task tool 调用:
 
 #### 小改动
 
-1. 在 CODE_ROOTS_ABS 目录中定位相关代码
+1. 在 PROJECT_PATH 目录中定位相关代码
 2. 直接修改代码（小改动允许主 Agent 直接执行）
 3. 运行测试确保不破坏已有功能
 4. MUST 调用 Task tool 审查修改：
@@ -215,7 +215,7 @@ Task tool 调用:
   description: "死代码扫描: <简述>"
   prompt: |
     HANDOFF: /team -> refactor-cleaner
-    Target Dir: <CODE_ROOTS_ABS>
+    Target Dir: <PROJECT_PATH>
     Task: 扫描死代码和重复代码，输出清理建议
 ```
 
@@ -241,7 +241,7 @@ Task tool 调用:
   description: "E2E 测试: <简述>"
   prompt: |
     HANDOFF: /team -> e2e-runner
-    Target Dir: <CODE_ROOTS_ABS>
+    Target Dir: <PROJECT_PATH>
     Task: 运行端到端测试，报告结果
 ```
 
@@ -255,7 +255,7 @@ Task tool 调用:
   description: "文档更新: <简述>"
   prompt: |
     HANDOFF: /team -> doc-updater
-    Target Dir: <CODE_ROOTS_ABS>
+    Target Dir: <PROJECT_PATH>
     Task: 更新项目文档，反映本次变更
     Files: <变更文件列表>
 ```
@@ -301,7 +301,7 @@ Task tool 调用:
 
 - OpenSpec 命令（/opsx-*）已安装在全局 ~/.cursor/commands/，所有 workspace 共享
 - OpenSpec 命令格式为 /opsx-<id>（短横线，非冒号）
-- 代码目标目录见 .space-config 的 CODE_ROOTS_ABS（NOT workspace 根目录）
+- 代码目标目录见 .env 的 PROJECT_PATH（NOT workspace 根目录）
 - openspec/ 是规范目录，NOT 代码目录
 - 根据项目技术栈选择对应的语言感知 sub-agent
 - 调用 Task tool 时 MUST 使用实际的 Task tool 函数调用，NOT 只是在文本中提到它

@@ -48,8 +48,8 @@ check "ai-driven.mdc 存在" \
     "[ -f '$TEMPLATE/.cursor/rules/ai-driven.mdc' ]"
 check "team.md 存在" \
     "[ -f '$TEMPLATE/.cursor/commands/team.md' ]"
-check ".space-config 存在" \
-    "[ -f '$TEMPLATE/.space-config' ]"
+check ".env 存在" \
+    "[ -f '$TEMPLATE/.env.example' ]"
 check ".gitignore 存在" \
     "[ -f '$TEMPLATE/.gitignore' ]"
 check "无 agents 目录（已移除自定义 agents）" \
@@ -104,8 +104,8 @@ check "ai-driven.mdc 不含覆盖率要求" \
     "! grep -qi '80%\|覆盖率' '$TEMPLATE/.cursor/rules/ai-driven.mdc'"
 check "ai-driven.mdc 不含 Handoff 格式" \
     "! grep -q 'HANDOFF:' '$TEMPLATE/.cursor/rules/ai-driven.mdc'"
-check "team.md 不含 MUST 目录规则" \
-    "! grep -q 'MUST.*CODE_ROOTS\|CODE_ROOTS.*MUST' '$TEMPLATE/.cursor/commands/team.md'"
+check "team.md 使用 PROJECT_PATH 而非 PROJECT_ROOT" \
+    "! grep -q 'PROJECT_ROOT' '$TEMPLATE/.cursor/commands/team.md'"
 
 echo ""
 echo "=== 6. Skill 和脚本检查 ==="
@@ -153,8 +153,8 @@ if "$SCRIPTS/init-space.sh" _verify_test 2>/dev/null; then
         "[ -f '$TEST_WS/.cursor/rules/ai-driven.mdc' ]"
     check "team.md 被复制" \
         "[ -f '$TEST_WS/.cursor/commands/team.md' ]"
-    check ".space-config 已填充" \
-        "grep -q 'SPACE_NAME=\"_verify_test\"' '$TEST_WS/.space-config'"
+    check ".env 已填充" \
+        "grep -q 'SPACE_NAME=\"_verify_test\"' '$TEST_WS/.env'"
     check ".code-workspace 存在" \
         "[ -f '$TEST_WS/_verify_test.code-workspace' ]"
     check ".cursor/commands 目录存在" \
@@ -183,8 +183,8 @@ echo "=== 8. sync-space.sh 测试 ==="
 if [ -d "$TEST_WS" ]; then
     # 修改 workspace 的 ai-driven.mdc，然后 sync，验证被覆盖
     echo "MODIFIED" >> "$TEST_WS/.cursor/rules/ai-driven.mdc"
-    # 修改 .space-config，验证不被覆盖
-    ORIGINAL_CONFIG="$(cat "$TEST_WS/.space-config")"
+    # 修改 .env，验证不被覆盖
+    ORIGINAL_CONFIG="$(cat "$TEST_WS/.env")"
 
     "$SCRIPTS/sync-space.sh" 2>/dev/null
 
@@ -192,8 +192,8 @@ if [ -d "$TEST_WS" ]; then
         "diff -q '$TEMPLATE/.cursor/rules/ai-driven.mdc' '$TEST_WS/.cursor/rules/ai-driven.mdc'"
     check "sync 后 team.md 与模板一致" \
         "diff -q '$TEMPLATE/.cursor/commands/team.md' '$TEST_WS/.cursor/commands/team.md'"
-    check "sync 后 .space-config 未被改动" \
-        "grep -q 'SPACE_NAME=\"_verify_test\"' '$TEST_WS/.space-config'"
+    check "sync 后 .env 未被改动" \
+        "grep -q 'SPACE_NAME=\"_verify_test\"' '$TEST_WS/.env'"
     check "sync 后无 agents 目录（已清理）" \
         "[ ! -d '$TEST_WS/.cursor/agents' ]"
     check "sync 后无 opsx 命令（已迁移到全局）" \

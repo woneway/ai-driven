@@ -1,9 +1,5 @@
----
-name: /opsx-verify
-id: opsx-verify
-category: Workflow
-description: Verify implementation matches change artifacts before archiving
----
+# opsx-verify
+
 
 Verify that an implementation matches the change artifacts (specs, tasks, design).
 

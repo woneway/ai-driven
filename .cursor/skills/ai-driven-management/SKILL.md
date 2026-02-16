@@ -42,6 +42,24 @@ description: Manages the ai-driven framework. Creates, syncs, verifies, and upgr
 - 全局资源在 `common/global_cursor/`，通过 symlink 挂载到 `~/.cursor/`
 - workspace 专属资源在 `workspaces/<name>/.cursor/`
 
+**路径规范约束**：
+
+当创建、修改或同步任何资源时（commands/rules/skills/agents），必须遵循以下规则：
+
+1. **禁止硬编码路径**：禁止在代码或配置文件中写入以下类型的绝对路径：
+   - 包含用户名的路径（如 `/Users/lianwu/...`）
+   - 硬编码的 `/Users/lianwu/ai/ai-driven`
+   - 硬编码的 `/Users/lianwu/ai/ai-projects`
+
+2. **正确做法**：
+   - 使用 `.env` 配置文件管理路径
+   - 使用相对路径
+   - 使用环境变量或 `common.sh` 中的路径变量
+
+3. **模板文件检查**：
+   - 所有放在 `common/workspace-template/` 下的文件必须可被复制到任意用户的环境
+   - 创建新资源后，检查是否有硬编码路径
+
 ## Setup 流程（全局初始化）
 
 初始化全局 Cursor 配置，安装 OpenSpec、ECC 等工具到 `common/global_cursor/`，并通过 symlink 挂载到 `~/.cursor/`。
@@ -98,7 +116,7 @@ bash scripts/init-space.sh <space_name> [code_root1] [code_root2] ...
 
 ## Analyze 流程
 
-1. 遍历 `workspaces/` 下所有含 `.space-config` 的目录
+1. 遍历 `workspaces/` 下所有含 `.env` 的目录
 2. 读取每个 workspace 的项目经验和使用模式
 
 ### 2.1 资源分析（可选）
@@ -180,8 +198,8 @@ cp workspaces/<name>/.cursor/skills/<skill> common/global_cursor/skills/
 
 直接执行，无需参数：
 
-1. 列出 `workspaces/` 下所有含 `.space-config` 的目录
-2. 读取每个 `.space-config` 的 `SPACE_NAME` 和 `CODE_ROOTS_ABS`
+1. 列出 `workspaces/` 下所有含 `.env` 的目录
+2. 读取每个 `.env` 的 `SPACE_NAME` 和 `PROJECT_PATH`
 3. 对比 workspace 中的 `ai-driven.mdc` / `team.md` 与模板是否一致
 4. 汇总报告
 

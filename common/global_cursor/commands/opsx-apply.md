@@ -1,9 +1,5 @@
----
-name: /opsx-apply
-id: opsx-apply
-category: Workflow
-description: Implement tasks from an OpenSpec change (Experimental)
----
+# opsx-apply
+
 
 Implement tasks from an OpenSpec change.
 

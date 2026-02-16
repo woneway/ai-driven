@@ -1,9 +1,4 @@
----
-name: /opsx-new
-id: opsx-new
-category: Workflow
-description: Start a new change using the experimental artifact workflow (OPSX)
----
+# opsx-new
 
 Start a new change using the experimental artifact-driven approach.
 

@@ -19,7 +19,7 @@ bash .cursor/skills/ai-driven-management/scripts/setup-global.sh
 # 2. 重启 Cursor IDE 使全局命令生效
 
 # 3. 创建 workspace
-bash .cursor/skills/ai-driven-management/scripts/init-space.sh my_app ../ai-projects/my-app
+bash .cursor/skills/ai-driven-management/scripts/init-space.sh my_app
 
 # 或创建空 workspace
 bash .cursor/skills/ai-driven-management/scripts/init-space.sh my_app
@@ -72,7 +72,7 @@ workspace/
 │   └── rules/
 │       └── ai-driven.mdc   # 核心约束规则
 ├── openspec/               # 需求规范目录（项目级）
-├── .space-config           # workspace 配置
+├── .env                     # workspace 配置
 └── .code-workspace         # Cursor 工作区文件
 ```
 
@@ -84,7 +84,7 @@ workspace/
 bash .cursor/skills/ai-driven-management/scripts/sync-space.sh
 ```
 
-同步会覆盖 `ai-driven.mdc` 和 `team.md`，不会动 `.space-config` 和 `.gitignore`。
+同步会覆盖 `ai-driven.mdc` 和 `team.md`，不会动 `.env` 和 `.gitignore`。
 
 ## 验证
 

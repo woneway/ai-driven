@@ -7,6 +7,23 @@ alwaysApply: true
 
 人只说需求，AI 全自动完成。失败自己修，中间不需要人确认。
 
+## 全局配置
+
+ai-driven 使用当前 workspace 的 `.env` 文件集中管理所有配置。
+
+首次使用请先确保 `.env` 文件存在：
+
+| 变量 | 说明 | 示例值 |
+|-----|------|-------|
+| SPACE_NAME | workspace 名称 | my-project |
+| PROJECT_PATH | 项目代码路径 | /path/to/ai-driven/projects/my-project |
+
+**读取配置**：使用 `grep` 读取 .env 文件获取配置值。例如：
+```bash
+# 从当前 workspace 的 .env 读取
+grep 'PROJECT_PATH' .env | cut -d'=' -f2
+```
+
 ## 入口
 
 /team 是唯一的自主开发入口。详见 .cursor/commands/team.md。
@@ -17,9 +34,9 @@ alwaysApply: true
 
 ## 目录规则
 
-- 代码 MUST 写到 CODE_ROOTS 指定的 project 目录，NOT workspace 根目录
+- 代码 MUST 写到 PROJECT_PATH 指定的目录，NOT workspace 根目录
 - openspec/ 是独立的规范目录，NOT 代码目录
-- 查看项目路径：读取 .space-config 文件的 CODE_ROOTS_ABS 字段
+- 查看项目路径：读取当前 workspace 的 .env 文件的 PROJECT_PATH 字段
 
 ## OpenSpec 工作流
 
@@ -43,17 +60,17 @@ MUST 实际调用 Task tool 函数（传入 subagent_type、description、prompt
 
 | 资源类型 | 全局位置 | 项目位置 | 维护者 |
 |---------|---------|---------|--------|
-| skills | `~/.cursor/skills/` (symlink → ai-driven/common/global_cursor/skills) | `<workspace>/.cursor/skills/` | ai-driven 官方 / workspace 用户 |
-| agents | `~/.cursor/agents/` (symlink → ai-driven/common/global_cursor/agents) | `<workspace>/.cursor/agents/` | ai-driven 官方 / workspace 用户 |
-| commands | `~/.cursor/commands/` (symlink → ai-driven/common/global_cursor/commands) | `<workspace>/.cursor/commands/` | ai-driven 官方 / workspace 用户 |
-| rules | `~/.cursor/rules/` (symlink → ai-driven/common/global_cursor/rules) | `<workspace>/.cursor/rules/` | ai-driven 官方 / workspace 用户 |
+| skills | `~/.cursor/skills/` (symlink → GLOBAL_CURSOR_PATH/skills) | `<workspace>/.cursor/skills/` | ai-driven 官方 / workspace 用户 |
+| agents | `~/.cursor/agents/` (symlink → GLOBAL_CURSOR_PATH/agents) | `<workspace>/.cursor/agents/` | ai-driven 官方 / workspace 用户 |
+| commands | `~/.cursor/commands/` (symlink → GLOBAL_CURSOR_PATH/commands) | `<workspace>/.cursor/commands/` | ai-driven 官方 / workspace 用户 |
+| rules | `~/.cursor/rules/` (symlink → GLOBAL_CURSOR_PATH/rules) | `<workspace>/.cursor/rules/` | ai-driven 官方 / workspace 用户 |
 
 ### 权限规则
 
 **你所在的是 workspace 目录，不是 ai-driven 目录。**
 
 - 你（当前 workspace 的 AI）NOT 能修改全局资源
-- 全局资源路径：`~/.cursor/` 或 `/Users/lianwu/ai/ai-driven/common/global_cursor/`
+- 全局资源路径：`~/.cursor/` 或通过 GLOBAL_CURSOR_PATH 变量指定
 - 你只能修改当前 workspace 的资源目录：`<workspace>/.cursor/`
 
 ### 安装规则

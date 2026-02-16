@@ -58,10 +58,11 @@ AI_ROOT="${AI_ROOT:-$(dirname "$AI_DRIVEN_ROOT")}"
 CURSOR_HOME="${CURSOR_HOME:-$HOME/.cursor}"
 GLOBAL_CURSOR_DIR="${GLOBAL_CURSOR_DIR:-$AI_DRIVEN_ROOT/common/global_cursor}"
 WORKSPACES_PATH="${WORKSPACES_PATH:-$AI_DRIVEN_ROOT/workspaces}"
+PROJECTS_DIR="${PROJECTS_DIR:-$AI_DRIVEN_ROOT/projects}"
 TEMPLATE_DIR="$AI_DRIVEN_ROOT/common/workspace-template"
 
 # symlink 管理的目录列表
-MANAGED_DIRS="rules skills agents commands"
+MANAGED_DIRS="rules skills agents commands hooks"
 
 # === 验证 AI_DRIVEN_ROOT 有效 ===
 _validate_ai_driven_root() {
@@ -80,9 +81,10 @@ _validate_ai_driven_root() {
 _show_paths() {
     info "AI_ROOT:          $AI_ROOT"
     info "AI_DRIVEN_ROOT:   $AI_DRIVEN_ROOT"
+    info "PROJECTS_DIR:     $PROJECTS_DIR"
+    info "WORKSPACES_PATH:  $WORKSPACES_PATH"
     info "GLOBAL_CURSOR_DIR: $GLOBAL_CURSOR_DIR"
     info "CURSOR_HOME:      $CURSOR_HOME"
-    info "WORKSPACES_PATH:  $WORKSPACES_PATH"
 }
 
 # === 辅助函数 ===

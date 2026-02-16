@@ -1,9 +1,5 @@
----
-name: /opsx-bulk-archive
-id: opsx-bulk-archive
-category: Workflow
-description: Archive multiple completed changes at once
----
+# opsx-bulk-archive
+
 
 Archive multiple completed changes in a single operation.
 

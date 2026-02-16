@@ -1,0 +1,41 @@
+{
+  "version": 1,
+  "hooks": {
+    "sessionStart": [
+      {
+        "command": "hooks/session-start.sh"
+      }
+    ],
+    "sessionEnd": [
+      {
+        "command": "hooks/session-end.sh"
+      }
+    ],
+    "subagentStart": [
+      {
+        "command": "hooks/subagent-start.sh"
+      }
+    ],
+    "subagentStop": [
+      {
+        "command": "hooks/subagent-stop.sh"
+      }
+    ],
+    "beforeShellExecution": [
+      {
+        "command": "hooks/audit-shell.sh",
+        "matcher": "rm -rf|del -rf|:(){ :|:& };:|shutdown|reboot"
+      }
+    ],
+    "afterShellExecution": [
+      {
+        "command": "hooks/audit-shell-log.sh"
+      }
+    ],
+    "postToolUse": [
+      {
+        "command": "hooks/audit-tool.sh"
+      }
+    ]
+  }
+}
