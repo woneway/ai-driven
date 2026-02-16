@@ -67,14 +67,14 @@ for f in "$TEMPLATE_DIR"/.*; do
     cp -r "$f" "$SPACE_ROOT/" 2>/dev/null || true
 done
 
-# === 2. 生成 .env ===
-echo "配置 .env 文件..."
+# === 2. 生成 .workspace.env ===
+echo "配置 .workspace.env 文件..."
 
 # 代码路径 = PROJECTS_DIR/项目名（去掉 _space 后缀）
 PROJECT_NAME="${SPACE_NAME%_space}"
 PROJECT_PATH="$PROJECTS_DIR/$PROJECT_NAME"
 
-cat > "$SPACE_ROOT/.env" << EOF
+cat > "$SPACE_ROOT/.workspace.env" << EOF
 # AI-Driven Workspace 配置
 # 由 init-space.sh 自动生成
 
@@ -94,7 +94,7 @@ PROJECT_PATH=$PROJECT_PATH
 # NOTIFY_MIN_DURATION=0
 EOF
 
-echo "  已生成 .env"
+echo "  已生成 .workspace.env"
 
 # === 3. 创建项目目录 ===
 echo "创建项目目录..."

@@ -19,7 +19,7 @@ description: AI 自主开发入口。接收需求后智能路由：判断类型�
 
 ### 步骤 0：环境准备
 
-0. 读取 .env 获取 SPACE_NAME 和 PROJECT_PATH
+0. 读取 .workspace.env 获取 SPACE_NAME 和 PROJECT_PATH
 1. 如果 PROJECT_PATH 包含多个路径（逗号分隔），解析为列表备用
 2. 检查全局命令 /opsx-new 是否可用（即 ~/.cursor/commands/opsx-new.md 存在）。不可用则提示用户运行 setup-global.sh
 
@@ -301,7 +301,7 @@ Task tool 调用:
 
 - OpenSpec 命令（/opsx-*）已安装在全局 ~/.cursor/commands/，所有 workspace 共享
 - OpenSpec 命令格式为 /opsx-<id>（短横线，非冒号）
-- 代码目标目录见 .env 的 PROJECT_PATH（NOT workspace 根目录）
+- 代码目标目录见 .workspace.env 的 PROJECT_PATH（NOT workspace 根目录）
 - openspec/ 是规范目录，NOT 代码目录
 - 根据项目技术栈选择对应的语言感知 sub-agent
 - 调用 Task tool 时 MUST 使用实际的 Task tool 函数调用，NOT 只是在文本中提到它

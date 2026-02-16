@@ -25,7 +25,7 @@ synced=0
 
 for ws in "$WORKSPACES_PATH"/*/; do
     [ -d "$ws" ] || continue
-    [ -f "$ws/.env" ] || continue
+    [ -f "$ws/.workspace.env" ] || continue
 
     ws_name="$(basename "$ws")"
     echo "同步: $ws_name"

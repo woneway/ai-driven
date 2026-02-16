@@ -1,8 +1,8 @@
 #!/bin/bash
 # =============================================================================
-# migrate-space-config.sh - 迁移 .space-config 到 .env
+# migrate-space-config.sh - 迁移 .space-config 到 .workspace.env
 #
-# 将 workspace 中的 .space-config 内容迁移到 .env
+# 将 workspace 中的 .space-config 内容迁移到 .workspace.env
 # 迁移后 .space-config 会被重命名为 .space-config.bak
 #
 # 用法:
@@ -29,7 +29,7 @@ NC='\033[0m'
 migrate_one() {
     local ws="$1"
     local space_config="$ws/.space-config"
-    local env_file="$ws/.env"
+    local env_file="$ws/.workspace.env"
     
     if [ ! -f "$space_config" ]; then
         echo -e "${YELLOW}跳过: $ws/.space-config 不存在${NC}"
@@ -41,14 +41,14 @@ migrate_one() {
     
     echo "迁移: $(basename "$ws")"
     
-    # 创建或更新 .env
+    # 创建或更新 .workspace.env
     if [ -f "$env_file" ]; then
-        # 备份现有 .env
+        # 备份现有 .workspace.env
         cp "$env_file" "$env_file.bak"
-        echo "  备份现有 .env -> .env.bak"
+        echo "  备份现有 .workspace.env -> .workspace.env.bak"
     fi
     
-    # 写入新 .env
+    # 写入新 .workspace.env
     # 旧 .space-config 中的 CODE_ROOTS_ABS 转为 PROJECT_PATH
     cat > "$env_file" << EOF
 # AI-Driven Workspace 配置
@@ -73,7 +73,7 @@ EOF
     # 重命名 .space-config
     mv "$space_config" "$space_config.bak"
     
-    echo -e "  ${GREEN}完成!${NC} .env 已创建，.space-config 已备份"
+    echo -e "  ${GREEN}完成!${NC} .workspace.env 已创建，.space-config 已备份"
     return 0
 }
 

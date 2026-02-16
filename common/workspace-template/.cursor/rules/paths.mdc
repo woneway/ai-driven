@@ -16,14 +16,14 @@ alwaysApply: true
 
 ## 正确做法
 
-### 1. 项目配置：使用 `.env` 文件
+### 1. 项目配置：使用 `.workspace.env` 文件
 
 ```bash
-# 从 .env 读取
-source .env && echo $PROJECT_PATH
+# 从 .workspace.env 读取
+source .workspace.env && echo $PROJECT_PATH
 
 # 或使用 grep
-grep 'PROJECT_PATH' .env | cut -d'=' -f2
+grep 'PROJECT_PATH' .workspace.env | cut -d'=' -f2
 ```
 
 ### 2. 相对路径
@@ -32,10 +32,10 @@ grep 'PROJECT_PATH' .env | cut -d'=' -f2
 
 ```bash
 # 错误
-source /path/to/ai-driven/.env
+source /path/to/ai-driven/.workspace.env
 
 # 正确
-source ./env
+source ./.workspace.env
 ```
 
 ## 新增资源检查
@@ -43,11 +43,11 @@ source ./env
 创建新的 commands/rules/skills 时：
 
 1. 检查文件内容是否有硬编码路径
-2. 确保使用 `.env` 或相对路径
+2. 确保使用 `.workspace.env` 或相对路径
 3. 模板文件必须能复制到任意环境使用
 
 ## 常见错误模式
 
 | 错误模式 | 修正方法 |
 |---------|---------|
-| 硬编码绝对路径 | 使用相对路径或从 .env 读取 |
+| 硬编码绝对路径 | 使用相对路径或从 .workspace.env 读取 |

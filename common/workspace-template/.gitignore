@@ -39,6 +39,7 @@ tmp/
 temp/
 
 # 环境变量
+.workspace.env
 .env
 .env.local
 .env.*.local

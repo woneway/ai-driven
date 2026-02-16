@@ -23,7 +23,7 @@ NOTIFY_SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 AI_DRIVEN_ROOT="$(cd "$NOTIFY_SCRIPT_DIR/../../../" && pwd)"
 ENV_FILE="$AI_DRIVEN_ROOT/.env"
 
-# 加载配置（从 .env 文件）
+# 加载配置（从 .env 和 .workspace.env 文件）
 load_config() {
     # 优先加载 workspace 级别配置，然后加载全局配置
     # workspace 配置会覆盖全局配置
@@ -43,9 +43,9 @@ load_config() {
     
     # 2. 如果存在 workspace 配置，加载并覆盖
     # 从 CURSOR_PROJECT_DIR 或环境变量获取 workspace 路径
-    if [ -n "$CURSOR_PROJECT_DIR" ] && [ -f "$CURSOR_PROJECT_DIR/.env" ]; then
+    if [ -n "$CURSOR_PROJECT_DIR" ] && [ -f "$CURSOR_PROJECT_DIR/.workspace.env" ]; then
         set -a
-        source "$CURSOR_PROJECT_DIR/.env"
+        source "$CURSOR_PROJECT_DIR/.workspace.env"
         set +a
     fi
 }

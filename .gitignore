@@ -9,3 +9,4 @@ projects/
 
 # 忽略全局配置（可能包含敏感信息）
 .env
+.workspace.env

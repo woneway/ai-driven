@@ -9,19 +9,19 @@ alwaysApply: true
 
 ## 全局配置
 
-ai-driven 使用当前 workspace 的 `.env` 文件集中管理所有配置。
+ai-driven 使用当前 workspace 的 `.workspace.env` 文件集中管理所有配置。
 
-首次使用请先确保 `.env` 文件存在：
+首次使用请先确保 `.workspace.env` 文件存在：
 
 | 变量 | 说明 | 示例值 |
 |-----|------|-------|
 | SPACE_NAME | workspace 名称 | my-project |
 | PROJECT_PATH | 项目代码路径 | /path/to/ai-driven/projects/my-project |
 
-**读取配置**：使用 `grep` 读取 .env 文件获取配置值。例如：
+**读取配置**：使用 `grep` 读取 .workspace.env 文件获取配置值。例如：
 ```bash
-# 从当前 workspace 的 .env 读取
-grep 'PROJECT_PATH' .env | cut -d'=' -f2
+# 从当前 workspace 的 .workspace.env 读取
+grep 'PROJECT_PATH' .workspace.env | cut -d'=' -f2
 ```
 
 ## 入口
@@ -36,7 +36,7 @@ grep 'PROJECT_PATH' .env | cut -d'=' -f2
 
 - 代码 MUST 写到 PROJECT_PATH 指定的目录，NOT workspace 根目录
 - openspec/ 是独立的规范目录，NOT 代码目录
-- 查看项目路径：读取当前 workspace 的 .env 文件的 PROJECT_PATH 字段
+- 查看项目路径：读取当前 workspace 的 .workspace.env 文件的 PROJECT_PATH 字段
 
 ## OpenSpec 工作流
 
