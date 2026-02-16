@@ -39,5 +39,52 @@ MUST 实际调用 Task tool 函数（传入 subagent_type、description、prompt
 
 ## 技能管理
 
-需要新技能时：先搜索 npx skills find，找到则 npx skills add -g -y；
-未找到且为项目业务知识则使用 create-skill skill 按规范创建。
+### 资源分类
+
+| 资源类型 | 全局位置 | 项目位置 | 维护者 |
+|---------|---------|---------|--------|
+| skills | `~/.cursor/skills/` (symlink → ai-driven/common/global_cursor/skills) | `<workspace>/.cursor/skills/` | ai-driven 官方 / workspace 用户 |
+| agents | `~/.cursor/agents/` (symlink → ai-driven/common/global_cursor/agents) | `<workspace>/.cursor/agents/` | ai-driven 官方 / workspace 用户 |
+| commands | `~/.cursor/commands/` (symlink → ai-driven/common/global_cursor/commands) | `<workspace>/.cursor/commands/` | ai-driven 官方 / workspace 用户 |
+| rules | `~/.cursor/rules/` (symlink → ai-driven/common/global_cursor/rules) | `<workspace>/.cursor/rules/` | ai-driven 官方 / workspace 用户 |
+
+### 权限规则
+
+**你所在的是 workspace 目录，不是 ai-driven 目录。**
+
+- 你（当前 workspace 的 AI）NOT 能修改全局资源
+- 全局资源路径：`~/.cursor/` 或 `/Users/lianwu/ai/ai-driven/common/global_cursor/`
+- 你只能修改当前 workspace 的资源目录：`<workspace>/.cursor/`
+
+### 安装规则
+
+当需要安装新资源时：
+
+1. **全局资源（如通用 skills、subagents）**：NOT 由你安装，由 ai-driven 官方维护。你应该告知用户去 ai-driven workspace 安装。
+
+2. **项目专属资源**：安装到当前 workspace 的 `.cursor/` 目录：
+   ```bash
+   # 正确：安装到当前 workspace
+   npx skills add <package> -y
+   # 资源会安装到 ./skills/ 目录
+   
+   # 错误：不能安装到全局
+   npx skills add <package> -g -y  # ❌ 禁止
+   ```
+
+3. **创建项目专属 rules/commands**：写入 `<workspace>/.cursor/rules/` 或 `<workspace>/.cursor/commands/`
+
+### 判断逻辑
+
+| 场景 | 正确操作 |
+|-----|---------|
+| 用户要求安装通用 skills | 告知用户去 ai-driven workspace 安装 |
+| 用户要求安装项目专属 skills | 安装到当前 workspace `.cursor/skills/` |
+| 需要创建项目规则 | 写入当前 workspace `.cursor/rules/` |
+| 需要修改全局配置 | NOT 允许，告知用户 |
+
+### 违规处理
+
+如果你发现自己在修改全局资源（`~/.cursor/` 指向的 global_cursor），立即停止并告知用户：
+
+> "抱歉，我不能修改全局资源。全局资源（skills、agents、commands、rules）只能由 ai-driven 官方维护。请在 ai-driven workspace 中操作，或者我可以帮你在当前项目创建专属资源。"

@@ -143,8 +143,29 @@ else
     mkdir -p "$SPACE_ROOT/openspec/changes" "$SPACE_ROOT/openspec/specs"
     echo "  安装 openspec: npm i -g @fission-ai/openspec@latest"
 fi
-# 容错：确保目录存在
-mkdir -p "$SPACE_ROOT/.cursor/commands" "$SPACE_ROOT/.cursor/rules"
+
+# === 4.1 确保 .cursor 目录完整 ===
+echo "确保 .cursor 目录完整..."
+mkdir -p "$SPACE_ROOT/.cursor/commands"
+mkdir -p "$SPACE_ROOT/.cursor/rules"
+mkdir -p "$SPACE_ROOT/.cursor/skills"      # 项目专属 skills
+mkdir -p "$SPACE_ROOT/.cursor/agents"       # 项目专属 agents
+
+# 复制 rules 模板（如果不存在）
+if [ -f "$TEMPLATE_DIR/.cursor/rules/ai-driven.mdc" ] && [ ! -f "$SPACE_ROOT/.cursor/rules/ai-driven.mdc" ]; then
+    cp "$TEMPLATE_DIR/.cursor/rules/ai-driven.mdc" "$SPACE_ROOT/.cursor/rules/"
+fi
+
+# 复制 commands 模板（如果不存在）
+if [ -d "$TEMPLATE_DIR/.cursor/commands" ]; then
+    for cmd in "$TEMPLATE_DIR/.cursor/commands"/*.md; do
+        [ -f "$cmd" ] || continue
+        cmd_name=$(basename "$cmd")
+        if [ ! -f "$SPACE_ROOT/.cursor/commands/$cmd_name" ]; then
+            cp "$cmd" "$SPACE_ROOT/.cursor/commands/"
+        fi
+    done
+fi
 
 # === 5. 追加 .gitignore 规则 ===
 for code_root in "${CODE_ROOTS[@]}"; do

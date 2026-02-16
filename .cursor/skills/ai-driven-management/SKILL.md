@@ -21,6 +21,27 @@ description: Manages the ai-driven framework. Creates, syncs, verifies, and upgr
 
 所有脚本路径相对于此 skill 目录：`.cursor/skills/ai-driven-management/scripts/`
 
+## Instructions
+
+在 ai-driven 根目录的 Cursor 窗口中使用此 skill。
+
+### 使用场景
+
+当用户需要以下操作时使用：
+- 创建新的 workspace
+- 同步所有 workspace 的配置
+- 验证框架健康状态
+- 分析 workspace 资源使用情况
+- 升级/安装新的 skills
+- 查看框架状态
+
+### 关键约束
+
+- 此 skill 只在 ai-driven 根目录（包含 `workspaces/` 和 `common/` 目录）中使用
+- 所有脚本通过 `common.sh` 管理路径
+- 全局资源在 `common/global_cursor/`，通过 symlink 挂载到 `~/.cursor/`
+- workspace 专属资源在 `workspaces/<name>/.cursor/`
+
 ## Setup 流程（全局初始化）
 
 初始化全局 Cursor 配置，安装 OpenSpec、ECC 等工具到 `common/global_cursor/`，并通过 symlink 挂载到 `~/.cursor/`。
@@ -79,14 +100,66 @@ bash scripts/init-space.sh <space_name> [code_root1] [code_root2] ...
 
 1. 遍历 `workspaces/` 下所有含 `.space-config` 的目录
 2. 读取每个 workspace 的项目经验和使用模式
-3. 使用 AskQuestion 确认分析范围：
+
+### 2.1 资源分析（可选）
+
+执行 `.cursor/skills/ai-driven-management/scripts/check-workspace-resources.sh` 分析：
+
+1. **扫描每个 workspace 的专属资源**：
+   - skills
+   - agents
+   - commands
+   - rules
+
+2. **检查全局 vs global_cursor 差异**：
+   - 识别未同步到 global_cursor 的资源
+
+3. **识别可升级资源**：
+   - 被多个 workspace 共同使用的资源
+   - 通用型资源建议升级到全局
+
+### 2.2 用户选择（QA 多选）
+
+使用 AskQuestion 提供 4 个多选题：
+
+```
+问题 1: "发现以下 skills 可以升级到全局，选择要升级的："
+  选项: [多选]
+  - skill-A (workspace: ai-fashion)
+  - skill-B (workspace: daily-stock)
+  - skill-C (workspace: crypto-trade)
+
+问题 2: "发现以下 commands 可以升级到全局，选择要升级的："
+  选项: [多选]
+  - command-A (workspace: xxx)
+  - ...
+
+问题 3: "发现以下 rules 可以升级到全局，选择要升级的："
+  选项: [多选]
+  - rule-A (workspace: xxx)
+  - ...
+
+问题 4: "发现以下 agents 可以升级到全局，选择要升级的："
+  选项: [多选]
+  - agent-A (workspace: xxx)
+  - ...
+```
+
+### 2.3 执行升级
+
+根据用户选择，执行复制操作：
+
+```bash
+# 将选中的资源从 workspace 复制到 global_cursor
+cp workspaces/<name>/.cursor/skills/<skill> common/global_cursor/skills/
+```
+
+### 2.4 确认分析范围（原有）
 
 ```
 问题: "分析哪些 workspace？"
   选项: [列出所有发现的 workspace 名称]（允许多选）
 ```
-
-4. 汇总分析，生成升级建议，等待用户确认
 
 ## Upgrade 流程
 
@@ -121,3 +194,44 @@ bash scripts/init-space.sh <space_name> [code_root1] [code_root2] ...
 | `scripts/init-space.sh` | 创建 workspace | space_name, [code_roots...] |
 | `scripts/sync-space.sh` | 同步所有 workspace | 无 |
 | `scripts/verify.sh` | 验证框架健康 | 无 |
+
+## Examples
+
+### 示例 1: 创建新 workspace
+
+用户说: "创建一个新的项目 workspace"
+
+```
+1. 使用 AskQuestion 收集：
+   - workspace 名称
+   - 是否关联已有代码目录
+2. 执行: bash scripts/init-space.sh <name> [code_paths]
+3. 提示用户打开 .code-workspace 文件
+```
+
+### 示例 2: 分析 workspace 资源
+
+用户说: "分析一下各个 workspace 的资源使用情况"
+
+```
+1. 执行 check-workspace-resources.sh 脚本
+2. 分析输出，识别可升级资源
+3. 使用 AskQuestion 让用户选择要升级的资源
+4. 执行复制操作升级到 global_cursor
+```
+
+### 示例 3: 同步配置
+
+用户说: "同步一下所有 workspace 的配置"
+
+```
+直接执行: bash scripts/sync-space.sh
+```
+
+### 示例 4: 验证框架
+
+用户说: "检查一下框架是否正常"
+
+```
+直接执行: bash scripts/verify.sh
+```
