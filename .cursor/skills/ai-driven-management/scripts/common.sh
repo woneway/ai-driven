@@ -3,7 +3,11 @@
 # common.sh - AI-Driven 脚本公共配置
 #
 # 所有脚本通过 source 此文件获取路径配置。
-# 路径推导优先级: 环境变量 > .workspace.env > 自动检测（基于脚本位置）
+# 配置优先级（从高到低）:
+#   1. 环境变量（export AI_ROOT=xxx）
+#   2. 工作区 .workspace.env（当前工作区目录下的配置）
+#   3. 全局 .workspace.env（ai-driven 根目录下的配置）
+#   4. 自动检测（基于脚本位置）
 #
 # 可配置的环境变量:
 #   AI_ROOT            ai-driven 所在的父目录（默认: 自动检测）
@@ -11,6 +15,7 @@
 #   CURSOR_HOME        Cursor 全局配置目录（默认: ~/.cursor）
 #   GLOBAL_CURSOR_DIR  global_cursor 路径（默认: $AI_DRIVEN_ROOT/common/global_cursor）
 #   WORKSPACES_PATH    workspaces 存放路径（默认: $AI_ROOT/workspaces）
+#   CURSOR_PROJECT_DIR 当前 Cursor 项目目录（用于检测工作区）
 #
 # 示例:
 #   # ai-driven 在 ~/ai/ai-driven
@@ -147,6 +152,102 @@ TEMPLATE_DIR="$AI_DRIVEN_ROOT/common/workspace-template"
 # symlink 管理的目录列表
 MANAGED_DIRS="rules skills agents commands hooks"
 
+# === 检测当前工作区目录 ===
+# 尝试从环境变量或当前工作目录检测工作区
+_detect_workspace_dir() {
+    # 优先使用 CURSOR_PROJECT_DIR（Cursor 设置的工作区目录）
+    if [ -n "${CURSOR_PROJECT_DIR:-}" ] && [ -f "$CURSOR_PROJECT_DIR/.workspace.env" ]; then
+        echo "$CURSOR_PROJECT_DIR"
+        return 0
+    fi
+
+    # 尝试从 cwd 检测（如果 cwd 在 workspaces/ 下）
+    local cwd="$PWD"
+    if [[ "$cwd" =~ /workspaces/[^/]+$ ]]; then
+        local ws_dir="${cwd%/}"  # 去掉末尾的 /
+        if [ -f "$ws_dir/.workspace.env" ]; then
+            echo "$ws_dir"
+            return 0
+        fi
+    fi
+
+    # 尝试从父目录检测
+    local parent="${cwd%/*}"
+    if [[ "$parent" =~ /workspaces/[^/]+$ ]]; then
+        local ws_dir="${parent%/}"
+        if [ -f "$ws_dir/.workspace.env" ]; then
+            echo "$ws_dir"
+            return 0
+        fi
+    fi
+
+    return 1
+}
+
+# === 读取工作区配置 ===
+# 工作区配置优先级高于全局配置
+_load_workspace_config() {
+    local ws_dir
+    ws_dir=$(_detect_workspace_dir) || return 1
+
+    local ws_env="$ws_dir/.workspace.env"
+    if [ ! -f "$ws_env" ]; then
+        return 1
+    fi
+
+    # 导出工作区路径供其他脚本使用
+    export WORKSPACE_DIR="$ws_dir"
+
+    # 逐行读取工作区配置（只读取非注释的有效行）
+    while IFS= read -r line || [ -n "$line" ]; do
+        # 跳过注释和空行
+        [[ "$line" =~ ^[[:space:]]*# ]] && continue
+        [[ -z "${line// }" ]] && continue
+
+        # 解析 key=value
+        if [[ "$line" =~ ^([A-Za-z_][A-Za-z0-9_]*)=(.*)$ ]]; then
+            key="${BASH_REMATCH[1]}"
+            value="${BASH_REMATCH[2]}"
+
+            # 去除引号
+            value="${value#\"}"
+            value="${value%\"}"
+            value="${value#\'}"
+            value="${value%\'}"
+
+            # 工作区配置覆盖全局配置（使用 eval 安全地设置变量）
+            # 只允许特定变量被工作区覆盖
+            case "$key" in
+                HOOK_ENABLED|HOOK_SESSION_START|HOOK_SESSION_END|HOOK_SUBAGENT_START|HOOK_SUBAGENT_STOP|HOOK_BEFORE_SHELL|HOOK_AFTER_SHELL|HOOK_POST_TOOL)
+                    eval "$key=\"$value\""
+                    ;;
+                NOTIFY_ENABLED_CHANNELS|NOTIFY_MIN_DURATION|DINGTALK_WEBHOOK_URL|DINGTALK_KEYWORD|WECHAT_WEBHOOK_URL)
+                    eval "$key=\"$value\""
+                    ;;
+                WORKSPACES_PATH|PROJECT_PATH)
+                    # 这些变量在工作区级别可能有不同含义，只在明确设置时覆盖
+                    if [ -n "$value" ]; then
+                        eval "$key=\"$value\""
+                    fi
+                    ;;
+            esac
+        fi
+    done < "$ws_env"
+
+    info "已加载工作区配置: $ws_dir"
+    return 0
+}
+
+# === 尝试加载工作区配置（可选，不强制要求）===
+# 在脚本需要工作区配置时调用此函数
+try_load_workspace_config() {
+    if _load_workspace_config 2>/dev/null; then
+        return 0
+    fi
+    # 静默失败，不影响非工作区场景
+    return 1
+}
+
 # === 验证 AI_DRIVEN_ROOT 有效 ===
 _validate_ai_driven_root() {
     if [ ! -d "$AI_DRIVEN_ROOT" ]; then
@@ -168,6 +269,9 @@ _show_paths() {
     info "WORKSPACES_PATH:  $WORKSPACES_PATH"
     info "GLOBAL_CURSOR_DIR: $GLOBAL_CURSOR_DIR"
     info "CURSOR_HOME:      $CURSOR_HOME"
+    if [ -n "${WORKSPACE_DIR:-}" ]; then
+        info "WORKSPACE_DIR:    $WORKSPACE_DIR"
+    fi
 }
 
 # === 辅助函数 ===

@@ -87,10 +87,39 @@ load_config() {
     local global_notify_channels="$NOTIFY_ENABLED_CHANNELS"
     local global_notify_duration="$NOTIFY_MIN_DURATION"
 
-    # 2. 如果存在 workspace 配置，只读取明确设置的变量（未注释的行）进行覆盖
+    # 2. 尝试检测工作区配置（多种方式）
     local workspace_config_loaded=false
+
+    # 方式1: CURSOR_PROJECT_DIR（Cursor 设置的环境变量）
+    local ws_env=""
     if [ -n "$CURSOR_PROJECT_DIR" ] && [ -f "$CURSOR_PROJECT_DIR/.workspace.env" ]; then
-        # 解析 workspace 配置，只读取有效行（非注释、非空行）
+        ws_env="$CURSOR_PROJECT_DIR/.workspace.env"
+    fi
+
+    # 方式2: 从当前工作目录检测（如果 cwd 在 workspaces/ 下）
+    if [ -z "$ws_env" ]; then
+        local cwd="$PWD"
+        if [[ "$cwd" =~ /workspaces/[^/]+$ ]]; then
+            local ws_dir="${cwd%/}"
+            if [ -f "$ws_dir/.workspace.env" ]; then
+                ws_env="$ws_dir/.workspace.env"
+            fi
+        fi
+    fi
+
+    # 方式3: 从父目录检测
+    if [ -z "$ws_env" ]; then
+        local parent="${cwd%/*}"
+        if [[ "$parent" =~ /workspaces/[^/]+$ ]]; then
+            local ws_dir="${parent%/}"
+            if [ -f "$ws_dir/.workspace.env" ]; then
+                ws_env="$ws_dir/.workspace.env"
+            fi
+        fi
+    fi
+
+    # 如果找到工作区配置，进行加载
+    if [ -n "$ws_env" ] && [ -f "$ws_env" ]; then
         while IFS= read -r line; do
             # 跳过注释行和空行
             [[ "$line" =~ ^[[:space:]]*# ]] && continue
@@ -110,7 +139,7 @@ load_config() {
 
                 echo "[$timestamp] Workspace 覆盖: $var_name=$var_value" >> "$config_log"
             fi
-        done < "$CURSOR_PROJECT_DIR/.workspace.env"
+        done < "$ws_env"
 
         workspace_config_loaded=true
     fi
@@ -124,7 +153,7 @@ load_config() {
 
     # 导出配置来源
     if [ "$workspace_config_loaded" = true ]; then
-        export CONFIG_SOURCE="全局 -> Workspace 覆盖: $CURSOR_PROJECT_DIR/.workspace.env"
+        export CONFIG_SOURCE="全局 -> Workspace 覆盖: $ws_env"
     else
         export CONFIG_SOURCE="全局: $ENV_FILE"
     fi

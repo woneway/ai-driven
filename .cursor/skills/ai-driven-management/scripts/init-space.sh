@@ -120,30 +120,49 @@ cat > "$SPACE_ROOT/${SPACE_NAME}.code-workspace" << EOF
 }
 EOF
 
-# === 5. 初始化 OpenSpec 项目目录 ===
-echo "初始化 OpenSpec 项目目录..."
+# === 5. 检查 OpenSpec 状态 ===
+echo "检查 OpenSpec 状态..."
 
 # 检查全局 opsx 命令是否已安装
 GLOBAL_OPSX_COUNT=$(ls "$CURSOR_HOME/commands"/opsx-*.md 2>/dev/null | wc -l | tr -d ' ')
+
 if [ "$GLOBAL_OPSX_COUNT" -ge 8 ]; then
-    echo "  全局 opsx 命令已就绪 ($GLOBAL_OPSX_COUNT 个)"
+    echo "  ✓ 全局 opsx 命令已就绪 ($GLOBAL_OPSX_COUNT 个)"
 else
-    echo "  警告: 全局 opsx 命令未安装或不完整 ($GLOBAL_OPSX_COUNT 个)"
-    echo "  请先运行: bash $CALLER_SCRIPT_DIR/setup-global.sh"
+    echo "  ✗ 全局 opsx 命令未安装或不完整 ($GLOBAL_OPSX_COUNT 个)"
+    echo ""
+    echo "  ┌─────────────────────────────────────────────┐"
+    echo "  │ 警告: OpenSpec 命令不可用                    │"
+    echo "  ├─────────────────────────────────────────────┤"
+    echo "  │ /team 命令需要 OpenSpec 才能正常工作         │"
+    echo "  │                                             │"
+    echo "  │ 请先运行以下命令安装 OpenSpec:               │"
+    echo "  │   cd $AI_DRIVEN_ROOT                        │"
+    echo "  │   bash .cursor/skills/ai-driven-management/ \\│"
+    echo "  │       scripts/setup-global.sh --openspec-only│"
+    echo "  └─────────────────────────────────────────────┘"
+    echo ""
 fi
 
-# 只创建 openspec/ 项目目录
+# 检查 openspec CLI 是否安装
+echo "检查 openspec CLI..."
 if command -v openspec &>/dev/null; then
+    echo "  ✓ openspec CLI 已安装: $(openspec --version 2>/dev/null || echo 'unknown')"
+    # 尝试初始化 OpenSpec 项目目录
     if (cd "$SPACE_ROOT" && openspec init --tools none 2>/dev/null); then
-        echo "  OpenSpec 项目目录已创建"
+        echo "  ✓ OpenSpec 项目目录已创建"
     else
-        echo "  警告: OpenSpec 初始化失败，手动创建目录"
+        echo "  ⚠ OpenSpec 初始化失败，手动创建目录"
         mkdir -p "$SPACE_ROOT/openspec/changes" "$SPACE_ROOT/openspec/specs"
     fi
 else
-    echo "  openspec 未安装，手动创建目录"
+    echo "  ✗ openspec CLI 未安装"
+    echo ""
+    echo "  安装 openspec:"
+    echo "    npm i -g @fission-ai/openspec@latest"
+    echo ""
+    # 手动创建目录
     mkdir -p "$SPACE_ROOT/openspec/changes" "$SPACE_ROOT/openspec/specs"
-    echo "  安装 openspec: npm i -g @fission-ai/openspec@latest"
 fi
 
 # === 6. 确保 .cursor 目录完整 ===
@@ -207,4 +226,13 @@ echo "项目: $PROJECT_PATH"
 echo ""
 echo "下一步:"
 echo "  1. 打开: $SPACE_ROOT/${SPACE_NAME}.code-workspace"
-echo "  2. 输入: '/team 做一个 xxx'"
+echo "  2. 如 OpenSpec 未安装，先运行:"
+echo "       cd $AI_DRIVEN_ROOT"
+echo "       bash .cursor/skills/ai-driven-management/ \\"
+echo "           scripts/setup-global.sh --openspec-only"
+echo "  3. 在 workspace 中输入: '/team 做一个 xxx'"
+echo ""
+echo "配置说明:"
+echo "  - 工作区配置: $SPACE_ROOT/.workspace.env"
+echo "  - Hooks 配置可在此文件中覆盖全局设置"
+echo "  - 配置优先级: 环境变量 > 工作区配置 > 全局配置"
