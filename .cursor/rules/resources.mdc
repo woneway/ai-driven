@@ -18,36 +18,36 @@ alwaysApply: true
 
 ## 安装方式
 
-安装前先问：**这个资源是给自己用还是要贡献给 ai-driven 框架开源？**
+安装前先问：**这个资源是给 ai-driven 自己用，还是给所有 workspace 共享？**
 
-### 1. 安装到 common/global_cursor/ (开源共享)
+### 1. 安装到 ai-driven 自己用
 
-适用于**多项目通用**的资源，贡献给 ai-driven 框架开源：
+适用于**专门管理和赋能 ai-driven 框架**的资源：
+
+- 安装到 `/ai-driven/.cursor/`
+- 仅 ai-driven 项目自身使用
+
+### 2. 安装到 common/global_cursor/ (所有 workspace 共享)
+
+适用于**所有 workspace 都能用**的资源：
 
 - **通用编程规范**：TypeScript、Python、Go 编码规范
 - **通用工具**：代码审查、测试、安全扫描
 - **框架无关技能**：Django、Spring Boot、React 等
 - **跨项目命令**：部署、运维、分析
 
-### 2. 安装给自己 (个人使用)
-
-适用于**个人专用**的资源，仅供自己使用：
-
-- 安装到 `~/.cursor/skills/` 或 `~/.agents/skills/`
-- 使用 npx skills CLI 直接安装
-
 ### 决策流程
 
 ```
 安装资源时：
 
-1. 这个资源要贡献给 ai-driven 框架开源吗？
-   是 → 安装到 common/global_cursor/
-   否 → 安装给自己（~/.cursor/skills/）
+1. 这个资源是给 ai-driven 框架自己用，还是所有 workspace 都能用？
+   - ai-driven 自己用 → 安装到 /ai-driven/.cursor/
+   - 所有 workspace 共享 → 安装到 common/global_cursor/
 
 2. 安装到 common/global_cursor/ 意味着：
    - 将被提交到 ai-driven 仓库
-   - 所有 fork ai-driven 的用户都能使用
+   - 所有 workspace 都能使用
    - 需要遵循框架规范
 ```
 
@@ -115,7 +115,17 @@ common/global_cursor/
 
 ## 使用 npx skills CLI 安装
 
-### 安装到 common/global_cursor (开源共享)
+### 安装到 ai-driven 自己用
+
+```bash
+# 1. 使用 npx skills add 安装
+npx skills add <owner/repo@skill> -g -y
+
+# 2. 复制到 ai-driven/.cursor/skills/
+cp -r ~/.agents/skills/<skill-name> /path/to/ai-driven/.cursor/skills/
+```
+
+### 安装到 common/global_cursor (所有 workspace 共享)
 
 ```bash
 # 1. 使用 npx skills add 安装
@@ -125,22 +135,12 @@ npx skills add <owner/repo@skill> -g -y
 cp -r ~/.agents/skills/<skill-name> /path/to/ai-driven/common/global_cursor/skills/
 ```
 
-### 安装给自己 (个人使用)
-
-```bash
-# 直接使用 npx skills add 安装到全局
-npx skills add <owner/repo@skill> -g -y
-
-# 或者安装到当前项目
-npx skills add <owner/repo@skill> -y
-```
-
 ## 验证清单
 
 新增资源时检查：
 
 - [ ] 符合 Skill 标准格式（SKILL.md + 必填字段）
-- [ ] 安装方式正确（global_cursor vs 个人使用）
+- [ ] 安装位置正确（ai-driven 自己用 vs 所有 workspace 共享）
 - [ ] 无硬编码路径
 - [ ] 行数符合限制
 - [ ] 包含 Examples
