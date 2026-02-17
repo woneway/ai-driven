@@ -144,3 +144,10 @@ cp -r ~/.agents/skills/<skill-name> /path/to/ai-driven/common/global_cursor/skil
 - [ ] 无硬编码路径
 - [ ] 行数符合限制
 - [ ] 包含 Examples
+
+## 使用 Skill
+
+当有相关 skill 可用时，必须使用对应 skill：
+
+- **提交代码时** → 使用 `git-commit` skill 生成符合 Conventional Commits 规范的 commit 信息
+- **创建/管理 workspace** → 使用 `ai-driven-management` skill
