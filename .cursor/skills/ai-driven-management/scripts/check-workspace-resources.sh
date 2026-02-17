@@ -119,8 +119,9 @@ find_upgradable_resources() {
 # =============================================================================
 main() {
     _validate_ai_driven_root 2>/dev/null || {
-        # 如果没有 common.sh，手动设置变量
-        AI_DRIVEN_ROOT="${AI_DRIVEN_ROOT:-/Users/lianwu/ai/ai-driven}"
+        # 如果没有 common.sh，从脚本位置推导根目录
+        SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+        AI_DRIVEN_ROOT="${AI_DRIVEN_ROOT:-$(cd "$SCRIPT_DIR/../.." && pwd)}"
         WORKSPACES_PATH="${WORKSPACES_PATH:-$AI_DRIVEN_ROOT/workspaces}"
         CURSOR_HOME="${CURSOR_HOME:-$HOME/.cursor}"
         GLOBAL_CURSOR_DIR="${GLOBAL_CURSOR_DIR:-$AI_DRIVEN_ROOT/common/global_cursor}"

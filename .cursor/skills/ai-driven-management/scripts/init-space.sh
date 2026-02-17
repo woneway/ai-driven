@@ -71,8 +71,9 @@ done
 echo "配置 .workspace.env 文件..."
 
 # 代码路径 = PROJECTS_DIR/项目名（去掉 _space 后缀）
+# 使用相对路径，便于 fork 后使用
 PROJECT_NAME="${SPACE_NAME%_space}"
-PROJECT_PATH="$PROJECTS_DIR/$PROJECT_NAME"
+PROJECT_PATH="../projects/$PROJECT_NAME"
 
 cat > "$SPACE_ROOT/.workspace.env" << EOF
 # AI-Driven Workspace 配置
@@ -98,8 +99,13 @@ echo "  已生成 .workspace.env"
 
 # === 3. 创建项目目录 ===
 echo "创建项目目录..."
-mkdir -p "$PROJECT_PATH"
-echo "  项目目录: $PROJECT_PATH"
+
+# 使用完整路径创建目录（因为 mkdir 需要完整路径）
+# PROJECT_PATH 是相对路径，需要基于 workspace 父目录计算
+PARENT_DIR="$(dirname "$SPACE_ROOT")"
+ABS_PROJECT_PATH="$PARENT_DIR/$PROJECT_PATH"
+mkdir -p "$ABS_PROJECT_PATH"
+echo "  项目目录: $PROJECT_PATH (相对路径)"
 
 # === 4. 生成 .code-workspace ===
 echo "生成 .code-workspace..."
@@ -144,8 +150,7 @@ fi
 echo "确保 .cursor 目录完整..."
 mkdir -p "$SPACE_ROOT/.cursor/commands"
 mkdir -p "$SPACE_ROOT/.cursor/rules"
-mkdir -p "$SPACE_ROOT/.cursor/skills"
-mkdir -p "$SPACE_ROOT/.cursor/agents"
+# 注意：skills 和 agents 使用全局的，不需要在 workspace 中创建
 
 # 复制 rules 模板
 if [ -f "$TEMPLATE_DIR/.cursor/rules/ai-driven.mdc" ] && [ ! -f "$SPACE_ROOT/.cursor/rules/ai-driven.mdc" ]; then
@@ -183,7 +188,7 @@ AI 自主开发 workspace。
 
 ## 项目代码
 
-代码位于: $PROJECT_PATH
+代码位于: $PROJECT_PATH (相对于 workspace 根目录)
 EOF
 
 # === 8. git init ===

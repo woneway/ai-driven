@@ -3,7 +3,7 @@
 # common.sh - AI-Driven 脚本公共配置
 #
 # 所有脚本通过 source 此文件获取路径配置。
-# 路径推导优先级: 环境变量 > 自动检测（基于脚本位置）
+# 路径推导优先级: 环境变量 > .workspace.env > 自动检测（基于脚本位置）
 #
 # 可配置的环境变量:
 #   AI_ROOT            ai-driven 所在的父目录（默认: 自动检测）
@@ -53,6 +53,89 @@ fi
 
 # AI_ROOT: 从 AI_DRIVEN_ROOT 反推（如果未设置）
 AI_ROOT="${AI_ROOT:-$(dirname "$AI_DRIVEN_ROOT")}"
+
+# === 从 setup.env 读取配置（用户配置文件）===
+_SETUP_ENV="$AI_DRIVEN_ROOT/../setup.env"
+if [ -f "$_SETUP_ENV" ]; then
+    while IFS= read -r line || [ -n "$line" ]; do
+        # 跳过注释和空行
+        [[ "$line" =~ ^[[:space:]]*# ]] && continue
+        [[ -z "${line// }" ]] && continue
+        
+        # 解析 key=value
+        if [[ "$line" =~ ^([A-Za-z_][A-Za-z0-9_]*)=(.*)$ ]]; then
+            key="${BASH_REMATCH[1]}"
+            value="${BASH_REMATCH[2]}"
+            
+            # 去除引号和空格
+            value="${value#"${value%%[![:space:]]*}"}"
+            value="${value%"${value##*[![:space:]]}"}"
+            value="${value#\"}"
+            value="${value%\"}"
+            value="${value#\'}"
+            value="${value%\'}"
+            
+            # 展开 ~
+            if [[ "$value" == ~* ]]; then
+                value=$(eval echo "$value")
+            fi
+            
+            # 设置环境变量（如果未设置）
+            case "$key" in
+                AI_ROOT)
+                    [ -z "${AI_ROOT:-}" ] && AI_ROOT="$value"
+                    ;;
+                WORKSPACES_DIR)
+                    [ -z "${WORKSPACES_DIR:-}" ] && WORKSPACES_DIR="$value"
+                    ;;
+                PROJECTS_DIR)
+                    [ -z "${PROJECTS_DIR:-}" ] && PROJECTS_DIR="$value"
+                    ;;
+            esac
+        fi
+    done < "$_SETUP_ENV"
+fi
+unset _SETUP_ENV
+
+# === 从 .workspace.env 读取配置（运行时配置）===
+_WS_ENV="$AI_DRIVEN_ROOT/.workspace.env"
+if [ -f "$_WS_ENV" ]; then
+    # 逐行读取，跳过注释和空行
+    while IFS= read -r line || [ -n "$line" ]; do
+        # 跳过注释和空行
+        [[ "$line" =~ ^[[:space:]]*# ]] && continue
+        [[ -z "${line// }" ]] && continue
+        
+        # 解析 key=value
+        if [[ "$line" =~ ^([A-Za-z_][A-Za-z0-9_]*)=(.*)$ ]]; then
+            key="${BASH_REMATCH[1]}"
+            value="${BASH_REMATCH[2]}"
+            
+            # 去除引号
+            value="${value#\"}"
+            value="${value%\"}"
+            value="${value#\'}"
+            value="${value%\'}"
+            
+            # 只有在环境变量未设置时才使用 .workspace.env 中的值
+            case "$key" in
+                AI_ROOT)
+                    [ -z "${AI_ROOT:-}" ] && AI_ROOT="$value"
+                    ;;
+                AI_DRIVEN_ROOT)
+                    [ -z "${AI_DRIVEN_ROOT:-}" ] && AI_DRIVEN_ROOT="$value"
+                    ;;
+                WORKSPACES_PATH)
+                    [ -z "${WORKSPACES_PATH:-}" ] && WORKSPACES_PATH="$value"
+                    ;;
+                PROJECTS_DIR)
+                    [ -z "${PROJECTS_DIR:-}" ] && PROJECTS_DIR="$value"
+                    ;;
+            esac
+        fi
+    done < "$_WS_ENV"
+fi
+unset _WS_ENV
 
 # 其他路径
 CURSOR_HOME="${CURSOR_HOME:-$HOME/.cursor}"

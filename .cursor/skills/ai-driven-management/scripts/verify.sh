@@ -123,8 +123,14 @@ check "setup-global.sh 存在且可执行" \
     "[ -x '$SCRIPTS/setup-global.sh' ]"
 check "init-space.sh 存在且可执行" \
     "[ -x '$SCRIPTS/init-space.sh' ]"
+check "setup.sh 存在且可执行" \
+    "[ -x '$SCRIPTS/setup.sh' ]"
 check "sync-space.sh 存在且可执行" \
     "[ -x '$SCRIPTS/sync-space.sh' ]"
+check "migrate-space-config.sh 存在且可执行" \
+    "[ -x '$SCRIPTS/migrate-space-config.sh' ]"
+check "migrate-workspace.sh 存在且可执行" \
+    "[ -x '$SCRIPTS/migrate-workspace.sh' ]"
 check "verify.sh 存在且可执行" \
     "[ -x '$SCRIPTS/verify.sh' ]"
 
@@ -154,7 +160,7 @@ if "$SCRIPTS/init-space.sh" _verify_test 2>/dev/null; then
     check "team.md 被复制" \
         "[ -f '$TEST_WS/.cursor/commands/team.md' ]"
     check ".workspace.env 已填充" \
-        "grep -q 'SPACE_NAME=\"_verify_test\"' '$TEST_WS/.workspace.env'"
+        "grep -q 'SPACE_NAME=_verify_test' '$TEST_WS/.workspace.env'"
     check ".code-workspace 存在" \
         "[ -f '$TEST_WS/_verify_test.code-workspace' ]"
     check ".cursor/commands 目录存在" \
@@ -193,7 +199,7 @@ if [ -d "$TEST_WS" ]; then
     check "sync 后 team.md 与模板一致" \
         "diff -q '$TEMPLATE/.cursor/commands/team.md' '$TEST_WS/.cursor/commands/team.md'"
     check "sync 后 .workspace.env 未被改动" \
-        "grep -q 'SPACE_NAME=\"_verify_test\"' '$TEST_WS/.workspace.env'"
+        "grep -q 'SPACE_NAME=_verify_test' '$TEST_WS/.workspace.env'"
     check "sync 后无 agents 目录（已清理）" \
         "[ ! -d '$TEST_WS/.cursor/agents' ]"
     check "sync 后无 opsx 命令（已迁移到全局）" \
