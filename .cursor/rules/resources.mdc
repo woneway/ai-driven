@@ -1,0 +1,166 @@
+---
+description: Skills/Rules/Commands/Agents 安装规范 — 确定安装范围和格式标准
+alwaysApply: true
+---
+
+# Skills/Rules/Commands/Agents 安装规范
+
+本规则规范 ai-driven 框架中资源的创建、安装和同步。
+
+## 资源类型
+
+| 类型 | 位置 | 说明 |
+|------|------|------|
+| Skills | `skills/` | AI 技能包，包含 SKILL.md |
+| Rules | `rules/` | Cursor 规则，包含 .mdc 文件 |
+| Commands | `commands/` | 命令定义 |
+| Agents | `agents/` | Sub-Agent 定义 |
+
+## 安装范围决策
+
+根据资源的**通用性**决定安装范围：
+
+### 全局安装（common/global_cursor/）
+
+适用于**多项目通用**的资源：
+
+- **通用编程规范**：TypeScript、Python、Go 编码规范
+- **通用工具**：代码审查、测试、安全扫描
+- **框架无关技能**：Django、Spring Boot、React 等
+- **跨项目命令**：部署、运维、分析
+
+### Workspace 安装（workspaces/<name>/.cursor/）
+
+适用于**项目特定**的资源：
+
+- **项目专属规则**：特定项目的代码风格
+- **私有技能**：仅当前项目使用的流程
+- **敏感配置**：项目特定的 hooks
+
+### 决策流程
+
+```
+资源创建/安装时：
+
+1. 这个资源是否适用于多个项目？
+   是 → 安装到 global_cursor
+   否 → 安装到特定 workspace
+
+2. 这个资源是否包含敏感信息？
+   是 → 安装到 workspace
+   否 → 可以考虑 global_cursor
+
+3. 这个资源是否需要经常更新？
+   是 → 安装到 workspace（独立管理）
+   否 → 安装到 global_cursor（统一管理）
+```
+
+## Skill 标准格式
+
+所有 Skills 必须符合以下格式：
+
+### 目录结构
+
+```
+skill-name/
+├── SKILL.md              # 必需：主文件
+├── reference.md          # 可选：详细参考（Progressive Disclosure）
+└── scripts/              # 可选：辅助脚本
+    └── helper.sh
+```
+
+### SKILL.md 格式
+
+```markdown
+---
+name: skill-name
+description: 技能描述（说明做什么 + 何时使用）
+---
+
+# Skill Name
+
+## 触发条件
+什么时候使用此 skill
+
+## 快速开始
+核心使用方法
+
+## Examples
+使用示例
+
+详细说明见 [reference.md](reference.md)
+```
+
+### 必填字段
+
+| 字段 | 要求 |
+|------|------|
+| name | 小写字母、数字、连字符，最多 64 字符 |
+| description | 说明用途和触发条件，第三人称 |
+| SKILL.md | 包含 Instructions 和 Examples |
+
+### 行数限制
+
+| 文件 | 限制 |
+|------|------|
+| SKILL.md | < 500 行 |
+| reference.md | 可超过，作为详细补充 |
+
+## 全局资源同步
+
+### global_cursor 结构
+
+```
+common/global_cursor/
+├── skills/           # 49 个 Skills
+├── rules/            # 28 个 Rules
+├── commands/         # 43 个 Commands
+├── agents/           # 13 个 Agents
+└── hooks/            # Hooks
+```
+
+### 同步机制
+
+- `~/.cursor/skills` → symlink → `common/global_cursor/skills`
+- 新增 skill 需添加到 `common/global_cursor/skills/`
+- 自动对所有 workspace 生效
+
+## 安装示例
+
+### 场景 1：安装新 Skill
+
+```
+用户：安装一个 Python 测试技能
+
+判断：
+- Python 测试 → 多项目通用 → 安装到 global_cursor
+
+操作：
+1. 克隆/下载 skill 到 common/global_cursor/skills/
+2. 验证 SKILL.md 格式
+3. 通过 symlink 自动生效
+```
+
+### 场景 2：创建项目专属 Skill
+
+```
+用户：为我的 ai-driven 项目创建 skill
+
+判断：
+- 仅当前项目使用 → 安装到 workspace
+
+操作：
+1. 创建 workspaces/ai-driven/.cursor/skills/
+2. 添加 skill 文件
+3. 仅当前 workspace 生效
+```
+
+## 验证清单
+
+新增资源时检查：
+
+- [ ] 符合 Skill 标准格式（SKILL.md + 必填字段）
+- [ ] 安装范围正确（global vs workspace）
+- [ ] 无硬编码路径
+- [ ] 行数符合限制
+- [ ] 包含 Examples
