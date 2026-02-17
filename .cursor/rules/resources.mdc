@@ -20,7 +20,7 @@ alwaysApply: true
 
 根据资源的**通用性**决定安装范围：
 
-### 全局安装（common/global_cursor/）
+### 安装到 common/global_cursor/
 
 适用于**多项目通用**的资源：
 
@@ -106,7 +106,7 @@ description: 技能描述（说明做什么 + 何时使用）
 | SKILL.md | < 500 行 |
 | reference.md | 可超过，作为详细补充 |
 
-## 全局资源同步
+## global_cursor 资源同步
 
 ### global_cursor 结构
 
@@ -124,6 +124,33 @@ common/global_cursor/
 - `~/.cursor/skills` → symlink → `common/global_cursor/skills`
 - 新增 skill 需添加到 `common/global_cursor/skills/`
 - 自动对所有 workspace 生效
+
+## 使用 npx skills CLI 安装
+
+由于 `npx skills add` 默认安装到 `~/.agents/skills/` 并自动在 `~/.cursor/skills/` 创建 symlink，需要手动调整到正确位置：
+
+### 安装到 global_cursor (通用技能)
+
+```bash
+# 1. 使用 npx skills add 安装
+npx skills add <owner/repo@skill> -g -y
+
+# 2. 复制到 common/global_cursor/skills/
+cp -r ~/.agents/skills/<skill-name> /path/to/ai-driven/common/global_cursor/skills/
+```
+
+### 安装到 workspace (项目特定技能)
+
+```bash
+# 1. 使用 npx skills add 安装
+npx skills add <owner/repo@skill> -g -y
+
+# 2. 复制到目标 workspace
+cp -r ~/.agents/skills/<skill-name> /path/to/ai-driven/workspaces/<workspace-name>/.cursor/skills/
+
+# 3. 删除 ~/.cursor/skills/ 中自动创建的 symlink（避免全局生效）
+rm ~/.cursor/skills/<skill-name>
+```
 
 ## 安装示例
 
@@ -160,7 +187,8 @@ common/global_cursor/
 新增资源时检查：
 
 - [ ] 符合 Skill 标准格式（SKILL.md + 必填字段）
-- [ ] 安装范围正确（global vs workspace）
+- [ ] 安装范围正确（global_cursor vs workspace）
+- [ ] 使用 npx skills CLI 安装后，正确移动到目标位置并清理 ~/.cursor/skills/ 中的 symlink
 - [ ] 无硬编码路径
 - [ ] 行数符合限制
 - [ ] 包含 Examples
