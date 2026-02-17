@@ -18,6 +18,8 @@ alwaysApply: true
 
 ## 安装方式
 
+安装前先问：**这个资源是给自己用还是要贡献给 ai-driven 框架开源？**
+
 ### 1. 安装到 common/global_cursor/ (开源共享)
 
 适用于**多项目通用**的资源，贡献给 ai-driven 框架开源：
@@ -33,6 +35,21 @@ alwaysApply: true
 
 - 安装到 `~/.cursor/skills/` 或 `~/.agents/skills/`
 - 使用 npx skills CLI 直接安装
+
+### 决策流程
+
+```
+安装资源时：
+
+1. 这个资源要贡献给 ai-driven 框架开源吗？
+   是 → 安装到 common/global_cursor/
+   否 → 安装给自己（~/.cursor/skills/）
+
+2. 安装到 common/global_cursor/ 意味着：
+   - 将被提交到 ai-driven 仓库
+   - 所有 fork ai-driven 的用户都能使用
+   - 需要遵循框架规范
+```
 
 ## Skill 标准格式
 
