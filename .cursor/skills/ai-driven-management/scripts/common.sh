@@ -10,7 +10,7 @@
 #   AI_DRIVEN_ROOT     ai-driven 仓库根目录（默认: $AI_ROOT/ai-driven）
 #   CURSOR_HOME        Cursor 全局配置目录（默认: ~/.cursor）
 #   GLOBAL_CURSOR_DIR  global_cursor 路径（默认: $AI_DRIVEN_ROOT/common/global_cursor）
-#   WORKSPACES_PATH    workspaces 存放路径（默认: $AI_DRIVEN_ROOT/workspaces）
+#   WORKSPACES_PATH    workspaces 存放路径（默认: $AI_ROOT/workspaces）
 #
 # 示例:
 #   # ai-driven 在 ~/ai/ai-driven
@@ -57,8 +57,8 @@ AI_ROOT="${AI_ROOT:-$(dirname "$AI_DRIVEN_ROOT")}"
 # 其他路径
 CURSOR_HOME="${CURSOR_HOME:-$HOME/.cursor}"
 GLOBAL_CURSOR_DIR="${GLOBAL_CURSOR_DIR:-$AI_DRIVEN_ROOT/common/global_cursor}"
-WORKSPACES_PATH="${WORKSPACES_PATH:-$AI_DRIVEN_ROOT/workspaces}"
-PROJECTS_DIR="${PROJECTS_DIR:-$AI_DRIVEN_ROOT/projects}"
+WORKSPACES_PATH="${WORKSPACES_PATH:-$AI_ROOT/workspaces}"
+PROJECTS_DIR="${PROJECTS_DIR:-$AI_ROOT/projects}"
 TEMPLATE_DIR="$AI_DRIVEN_ROOT/common/workspace-template"
 
 # symlink 管理的目录列表

@@ -16,7 +16,7 @@ ai-driven 使用当前 workspace 的 `.workspace.env` 文件集中管理所有�
 | 变量 | 说明 | 示例值 |
 |-----|------|-------|
 | SPACE_NAME | workspace 名称 | my-project |
-| PROJECT_PATH | 项目代码路径 | /path/to/ai-driven/projects/my-project |
+| PROJECT_PATH | 项目代码路径 | /path/to/ai/projects/my-project |
 
 **读取配置**：使用 `grep` 读取 .workspace.env 文件获取配置值。例如：
 ```bash

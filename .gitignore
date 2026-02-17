@@ -1,12 +1,6 @@
 # AI-Driven Workspace
 # 此文件为 ai-driven 根目录专用
 
-# 忽略所有 workspace（它们各自独立管理 git）
-workspaces/
-
-# 忽略项目代码目录
-projects/
-
 # 忽略全局配置（可能包含敏感信息）
 .env
 .workspace.env
